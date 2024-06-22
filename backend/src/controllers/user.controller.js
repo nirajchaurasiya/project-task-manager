@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { options } from "../utils/cookieOptions.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
    try {
@@ -31,22 +32,19 @@ const loginUser = asyncHandler(async (req, res) => {
    //access and referesh token
    //send cookie
 
-   const { email, username, password } = req.body;
-   console.log(email);
+   const { email, password } = req.body;
+   console.log(email, password);
 
-   if (!username && !email) {
+   if (!email) {
       throw new ApiError(400, "username or email is required");
    }
 
-   // Here is an alternative of above code based on logic discussed in video:
+   // Here is an alternative of above code based on logic:
    // if (!(username || email)) {
    //     throw new ApiError(400, "username or email is required")
-
    // }
 
-   const user = await User.findOne({
-      $or: [{ username }, { email }],
-   });
+   const user = await User.findOne({ email: email });
 
    if (!user) {
       throw new ApiError(404, "User does not exist");
@@ -65,11 +63,6 @@ const loginUser = asyncHandler(async (req, res) => {
    const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken"
    );
-
-   const options = {
-      httpOnly: true,
-      secure: true,
-   };
 
    return res
       .status(200)
