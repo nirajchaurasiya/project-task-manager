@@ -1,0 +1,116 @@
+.sidebar-container {
+  height: 100vh;
+  min-width: 250px;
+  border-right: 1px solid rgb(237, 245, 254);
+  padding: 2rem 0px 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  cursor: pointer;
+}
+.sidebar-heading p {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.side-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-weight: 500;
+  color: rgb(153, 150, 150);
+  padding: 0.5rem 3rem;
+  gap: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.sidebar-link p {
+  font-size: 18px;
+}
+.sidebar-link svg {
+  font-size: 1.6rem;
+}
+.active {
+  background-color: rgb(236, 244, 253);
+  color: black;
+}
+.logout-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+  gap: 1rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Logout */
+.logout-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(141, 148, 152, 0.7);
+  z-index: 1000;
+  transition: all 0.3s ease 0s;
+}
+
+.logout-mid-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-mid-container .main-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  gap: 10px;
+  border-radius: 20px;
+  padding: 1rem 2rem;
+  font-weight: 600;
+}
+
+.logout-mid-container button {
+  padding: 1rem 7rem;
+  border-radius: 15px;
+  border: transparent;
+  background-color: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  color: var(--white);
+  background-color: var(--dark-primary);
+}
+
+.logout-mid-container button:last-child {
+  padding: 1rem 7rem;
+  border-radius: 15px;
+  border: transparent;
+  background-color: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  color: var(--error-red);
+  border: 1px solid var(--error-red);
+}

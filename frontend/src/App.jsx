@@ -15,7 +15,19 @@ export default function App() {
             element={<AuthLayout children={<Register />} />}
           />
 
-          <Route path="/" element={<AuthLayout children={<Login />} />} />
+          {/* <Route path="/" element={<AuthLayout children={<Login />} />} /> */}
+
+          <Route path="/" element={<Layout children={<p>Dashboard</p>} />} />
+
+          <Route
+            path="/analytics"
+            element={<Layout children={<p>Analytics</p>} />}
+          />
+
+          <Route
+            path="/settings"
+            element={<Layout children={<p>Settings</p>} />}
+          />
         </Routes>
       </BrowserRouter>
     </main>

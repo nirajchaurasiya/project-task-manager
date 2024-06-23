@@ -3,7 +3,7 @@ import "../styles/layout.css";
 import Sidebar from "../components/Sidebar";
 export default function Layout({ children }) {
   return (
-    <section className="">
+    <section className="dashboard-container">
       <div className="sidebar">
         <Sidebar />
       </div>
