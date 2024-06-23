@@ -17,14 +17,14 @@
   cursor: pointer;
 }
 .sidebar-heading p {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 19px;
+  font-weight: 700;
 }
 
 .side-nav-links {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .sidebar-link {
@@ -113,4 +113,7 @@
   cursor: pointer;
   color: var(--error-red);
   border: 1px solid var(--error-red);
+}
+.logout-button {
+  color: var(--error-red);
 }

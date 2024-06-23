@@ -58,7 +58,7 @@ export default function Sidebar() {
         </div>
 
         <div className="side-nav-links">
-          <NavLink to="/" className="sidebar-link">
+          <NavLink to="/home" className="sidebar-link">
             <img src="/board.svg" alt="" />
             <p>Board</p>
           </NavLink>

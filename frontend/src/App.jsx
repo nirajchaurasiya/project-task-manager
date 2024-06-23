@@ -7,6 +7,7 @@ import Login from "./AuthLayout/Login";
 import Register from "./AuthLayout/Register";
 import Settings from "./components/Settings";
 import Analytics from "./components/Analytics";
+import Board from "./components/Board";
 export default function App() {
   return (
     <main>
@@ -17,9 +18,9 @@ export default function App() {
             element={<AuthLayout children={<Register />} />}
           />
 
-          {/* <Route path="/" element={<AuthLayout children={<Login />} />} /> */}
+          <Route path="/" element={<AuthLayout children={<Login />} />} />
 
-          <Route path="/" element={<Layout children={<p>Dashboard</p>} />} />
+          <Route path="/home" element={<Layout children={<Board />} />} />
 
           <Route
             path="/analytics"

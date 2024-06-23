@@ -1,0 +1,86 @@
+.board-container {
+  display: flex;
+  flex-direction: column;
+
+  width: calc(100vw - 250px);
+}
+
+.board-header,
+.board-second-options {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+}
+.board-header p:first-child {
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.board-header span:nth-child(2) {
+  font-weight: 300;
+  color: rgb(128, 128, 128);
+}
+
+.board-second-options p {
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.8px;
+}
+.board-second-options select {
+  height: 20px;
+  border: 0px;
+  outline: 0;
+}
+.board-all-cards {
+  height: 100%;
+  display: flex;
+  overflow-x: scroll;
+  padding: 0px 2rem;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.board-all-cards .card {
+  width: 400px;
+  min-height: 82vh;
+  border-radius: 15px;
+  padding: 1rem;
+  flex-shrink: 0;
+  overflow-y: scroll;
+  background-color: rgb(238, 242, 245);
+  margin-bottom: 20px;
+}
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  height: 10px;
+  width: 10px;
+  background-color: var(--medium-gray);
+  border-radius: 50px;
+}
+.card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card .card-header p:first-child {
+  font-size: 17px;
+}
+.card .card-header p svg {
+  font-size: 22px;
+  color: rgb(133, 133, 133);
+}
+.card .card-header p svg:hover {
+  color: var(--black);
+  cursor: pointer;
+}
+.todo-list-container {
+  background-color: white;
+}
