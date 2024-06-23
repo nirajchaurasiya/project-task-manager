@@ -23,6 +23,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
       );
    }
 };
+
 const login = asyncHandler(async (req, res, next) => {
    try {
       const { email, password } = req.body;
@@ -169,4 +170,107 @@ const logoutUser = asyncHandler(async (req, res) => {
    }
 });
 
-export { login, loginUserWithToken, register, logoutUser };
+const refreshAccessToken = asyncHandler(async (req, res, next) => {
+   const incomingRefreshToken =
+      req.cookies.refreshToken || req.body.refreshToken;
+
+   if (!incomingRefreshToken) {
+      throw new ApiError(401, "unauthorized request");
+   }
+
+   try {
+      const decodedToken = jwt.verify(
+         incomingRefreshToken,
+         process.env.REFRESH_TOKEN_SECRET
+      );
+
+      const user = await User.findById(decodedToken?._id);
+
+      if (!user) {
+         throw new ApiError(401, "Invalid refresh token");
+      }
+
+      if (incomingRefreshToken !== user?.refreshToken) {
+         throw new ApiError(401, "Refresh token is expired or used");
+      }
+
+      const options = {
+         httpOnly: true,
+         secure: true,
+      };
+
+      const { accessToken, newRefreshToken } =
+         await generateAccessAndRefereshTokens(user._id);
+
+      return res
+         .status(200)
+         .cookie("accessToken", accessToken, options)
+         .cookie("refreshToken", newRefreshToken, options)
+         .json(
+            new ApiResponse(
+               200,
+               { accessToken, refreshToken: newRefreshToken },
+               "Access token refreshed"
+            )
+         );
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
+const updateProfile = asyncHandler(async (req, res, next) => {
+   try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(400, "User couldn't be found");
+      }
+
+      const { email, fullName, password } = req?.body;
+
+      if (email) {
+         user.email = email;
+      }
+
+      if (fullName) {
+         user.fullName = fullName;
+      }
+
+      if (password) {
+         user.password = password;
+      }
+
+      await user.save();
+
+      const updatedUser = await User.findById(userId).select(
+         "-password -refreshToken"
+      );
+
+      return res
+         .status(200)
+         .json(new ApiResponse(200, { user: updatedUser }, "User updated"));
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
+export {
+   login,
+   loginUserWithToken,
+   register,
+   logoutUser,
+   refreshAccessToken,
+   updateProfile,
+};
