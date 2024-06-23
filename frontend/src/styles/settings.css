@@ -1,0 +1,11 @@
+.settings-container {
+  padding: 35px;
+}
+.settings-container .settings-header {
+  font-size: 2.1rem;
+  font-weight: 500;
+  margin-bottom: 4rem;
+}
+.settings-form {
+  width: 400px;
+}

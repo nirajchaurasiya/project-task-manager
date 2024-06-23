@@ -5,6 +5,8 @@ import Layout from "./layout/Layout";
 import AuthLayout from "./AuthLayout/AuthLayout";
 import Login from "./AuthLayout/Login";
 import Register from "./AuthLayout/Register";
+import Settings from "./components/Settings";
+import Analytics from "./components/Analytics";
 export default function App() {
   return (
     <main>
@@ -21,12 +23,12 @@ export default function App() {
 
           <Route
             path="/analytics"
-            element={<Layout children={<p>Analytics</p>} />}
+            element={<Layout children={<Analytics />} />}
           />
 
           <Route
             path="/settings"
-            element={<Layout children={<p>Settings</p>} />}
+            element={<Layout children={<Settings />} />}
           />
         </Routes>
       </BrowserRouter>
