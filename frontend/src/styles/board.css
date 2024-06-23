@@ -1,7 +1,7 @@
 .board-container {
   display: flex;
   flex-direction: column;
-
+  height: 100%;
   width: calc(100vw - 250px);
 }
 
@@ -42,11 +42,12 @@
   padding: 0px 2rem;
   justify-content: space-between;
   gap: 2rem;
+  overflow-y: hidden;
 }
 
 .board-all-cards .card {
   width: 400px;
-  min-height: 82vh;
+  min-height: 95%;
   border-radius: 15px;
   padding: 1rem;
   flex-shrink: 0;
