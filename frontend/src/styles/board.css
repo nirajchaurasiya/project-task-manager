@@ -47,13 +47,16 @@
 
 .board-all-cards .card {
   width: 400px;
-  min-height: 95%;
+  height: 100%;
   border-radius: 15px;
   padding: 1rem;
   flex-shrink: 0;
-  overflow-y: scroll;
   background-color: rgb(238, 242, 245);
+  overflow-y: scroll;
   margin-bottom: 20px;
+}
+.backlog-container {
+  height: 100vh;
 }
 ::-webkit-scrollbar {
   height: 10px;
@@ -71,6 +74,10 @@
   justify-content: space-between;
   align-items: center;
 }
+.card-header p:last-child {
+  display: flex;
+  gap: 5px;
+}
 .card .card-header p:first-child {
   font-size: 17px;
 }
@@ -84,4 +91,108 @@
 }
 .todo-list-container {
   background-color: white;
+  margin: 1rem 0px;
+  padding: 1rem;
+  width: 100%;
+  border-radius: 20px;
+}
+.todo-list-container-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.left-text {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: rgb(133, 133, 133);
+}
+.left-text .alert-circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-pink);
+}
+.todo-list-container-header svg {
+  cursor: pointer;
+  font-size: 1.6rem;
+}
+.todo-list-container .title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 1.2rem;
+  cursor: pointer;
+  font-weight: 500;
+  margin-bottom: 1.8rem;
+  width: 60%;
+}
+
+.check-list-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-collapse-expand {
+  width: 21px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(236, 236, 236);
+  border: none;
+}
+.btn-collapse-expand svg {
+  font-size: 1.125rem;
+  color: gray;
+}
+.checklist-tasks {
+  display: flex;
+  flex-direction: column;
+}
+
+.checklist-task {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgb(226, 226, 226);
+  border-radius: 15px;
+  margin: 1rem 1rem 0rem 0px;
+  padding: 0.7rem 0.8rem;
+  gap: 1rem;
+}
+.all-important-details {
+  font-family: Inter;
+  margin-top: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.due-date {
+  background-color: rgb(226, 226, 226);
+  color: var(--black);
+  font-family: Inter;
+  padding: 0.3rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.other-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 10px;
+}
+.other-details p {
+  font-size: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  color: rgb(118, 117, 117);
+  background-color: rgb(219, 219, 219);
+  font-weight: 600;
+  border-radius: 6px;
+  border: transparent;
+  cursor: pointer;
 }
