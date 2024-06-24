@@ -16,7 +16,7 @@ import HomeLoader from "./components/HomeLoader";
 
 export default function App() {
   const dispatch = useDispatch();
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -25,8 +25,8 @@ export default function App() {
         const loginUser = await loginUserWithToken();
         const { user, success } = loginUser;
         if (success) {
-          setCookie("accessToken", user.accessToken, 1);
-          setCookie("refreshToken", user.refreshToken, 1);
+          setCookie("accessToken", user.accessToken, 0.4);
+          setCookie("refreshToken", user.refreshToken, 7);
           dispatch(saveLoggedInUser(user.user));
           localStorage.setItem("isCookieFromProManage", true);
         }

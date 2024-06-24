@@ -1,10 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { HiOutlineMail } from "react-icons/hi";
 import { CiLock } from "react-icons/ci";
 import { CgEye } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 import "../styles/settings.css";
+import { isValidEmail } from "../utils/emailValidation";
+import { ToastContext } from "../context/ToastContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
@@ -25,9 +29,17 @@ export default function Settings() {
   const oldPasswordRef = useRef(null);
   const passwordRef = useRef(null);
 
-  const isValidEmail = (email) => {
-    return /\S+@\S+\.\S+/.test(email);
+  const setToastText = useContext(ToastContext);
+  const displayToast = (text, success) => {
+    if (success) {
+      setToastText(text);
+      toast.success(text);
+    } else {
+      setToastText(text);
+      toast.error(text);
+    }
   };
+  const navigate = useNavigate();
 
   const handleFullNameChange = (e) => {
     const value = e.target.value;
@@ -74,7 +86,12 @@ export default function Settings() {
           : "",
     }));
   };
-
+  const initialFormValues = useRef({
+    fullName: loggedInUser?.fullName || "",
+    email: loggedInUser?.email || "",
+    oldPassword: "",
+    password: "",
+  }).current;
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -117,10 +134,21 @@ export default function Settings() {
         passwordRef.current.focus();
       }
     }
+    const changes = {
+      fullName: fullName !== initialFormValues.fullName,
+      email: email !== initialFormValues.email,
+      oldPassword: oldPassword !== initialFormValues.oldPassword,
+      password: password !== initialFormValues.password,
+    };
+    const changesMade = Object.values(changes).some((change) => change);
 
+    if (!changesMade) {
+      displayToast("No changes have been made", false);
+      return;
+    }
     if (valid) {
-      // Handle form submission
-      console.log("Form submitted");
+      console.log(changesMade);
+      console.log(changes);
     }
   };
 

@@ -9,10 +9,11 @@ export default function Layout({ children, loader }) {
   const navigate = useNavigate();
   const isCookieFromProManage = localStorage.getItem("isCookieFromProManage");
   useEffect(() => {
-    if (!isCookieFromProManage) {
-      if (!loader) if (!loggedInUser) navigate("/");
-    }
-  }, [loggedInUser, isCookieFromProManage, loader]);
+    if (!loader) {
+      if (!loggedInUser) navigate("/");
+    } else if (isCookieFromProManage && !loader)
+      if (!loggedInUser) navigate("/");
+  }, [loggedInUser, isCookieFromProManage, loader, navigate]);
   return (
     <section className="dashboard-container">
       <div className="sidebar">

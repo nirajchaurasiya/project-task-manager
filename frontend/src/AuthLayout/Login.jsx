@@ -66,8 +66,8 @@ export default function Login() {
       const { msg, success, data } = response;
       if (success && data) {
         const { accessToken, refreshToken, user } = data;
-        setCookie("accessToken", accessToken, 1);
-        setCookie("refreshToken", refreshToken, 1);
+        setCookie("accessToken", accessToken, 0.4);
+        setCookie("refreshToken", refreshToken, 7);
         dispatch(saveLoggedInUser(user));
         localStorage.setItem("isCookieFromProManage", true);
         navigate("/home");
