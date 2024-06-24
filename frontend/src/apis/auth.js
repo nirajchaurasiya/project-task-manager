@@ -45,7 +45,6 @@ const loginUser = async (email, password) => {
 
     const { success, statusCode, data } = response.data;
 
-    console.log(data, data.user);
     if (success && statusCode === 200) {
       return { success: true, msg: "User logged In", data };
     }

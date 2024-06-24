@@ -11,6 +11,7 @@ import { ToastContext } from "../context/ToastContext";
 import { setCookie } from "../utils/cookieActions";
 import { useDispatch } from "react-redux";
 import { saveLoggedInUser } from "../features/auth/authSlice";
+import { saveAccessToken } from "../features/accessToken/accessTokenSlice";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,8 +67,9 @@ export default function Login() {
       const { msg, success, data } = response;
       if (success && data) {
         const { accessToken, refreshToken, user } = data;
-        setCookie("accessToken", accessToken, 0.4);
+        setCookie("accessToken", accessToken, 1);
         setCookie("refreshToken", refreshToken, 7);
+        dispatch(saveAccessToken(accessToken));
         dispatch(saveLoggedInUser(user));
         localStorage.setItem("isCookieFromProManage", true);
         navigate("/home");

@@ -3,16 +3,22 @@ import { HiOutlineMail } from "react-icons/hi";
 import { CiLock } from "react-icons/ci";
 import { CgEye } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa6";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import "../styles/settings.css";
 import { isValidEmail } from "../utils/emailValidation";
 import { ToastContext } from "../context/ToastContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { updateProfile } from "../apis/user";
+import {
+  clearLoggedInUser,
+  saveLoggedInUser,
+} from "../features/auth/authSlice";
+import { deleteAllCookies } from "../utils/cookieActions";
 
 export default function Settings() {
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
-
+  const accessToken = useSelector((state) => state.accessToken.accessToken);
   const [fullName, setFullName] = useState(loggedInUser?.fullName || "");
   const [email, setEmail] = useState(loggedInUser?.email || "");
   const [oldPassword, setOldPassword] = useState("");
@@ -30,6 +36,7 @@ export default function Settings() {
   const passwordRef = useRef(null);
 
   const setToastText = useContext(ToastContext);
+
   const displayToast = (text, success) => {
     if (success) {
       setToastText(text);
@@ -39,116 +46,161 @@ export default function Settings() {
       toast.error(text);
     }
   };
-  const navigate = useNavigate();
 
-  const handleFullNameChange = (e) => {
-    const value = e.target.value;
-    setFullName(value);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      fullName: value === "" ? "This field is required" : "",
-    }));
-  };
-
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      email:
-        value === ""
-          ? "This field is required"
-          : !isValidEmail(value)
-          ? "Invalid email format"
-          : "",
-    }));
-  };
-
-  const handleOldPasswordChange = (e) => {
-    const value = e.target.value;
-    setOldPassword(value);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      oldPassword: value === "" ? "This field is required" : "",
-    }));
-  };
-
-  const handlePasswordChange = (e) => {
-    const value = e.target.value;
-    setPassword(value);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      password:
-        value === ""
-          ? "This field is required"
-          : value.length < 8
-          ? "Password should be of minimum 8 characters"
-          : "",
-    }));
-  };
   const initialFormValues = useRef({
     fullName: loggedInUser?.fullName || "",
     email: loggedInUser?.email || "",
     oldPassword: "",
     password: "",
   }).current;
-  const handleSubmit = (e) => {
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleFullNameChange = (e) => {
+    const value = e.target.value;
+    setFullName(value);
+    if (value !== initialFormValues.fullName) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        fullName: value === "" ? "This field is required" : "",
+      }));
+    }
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    if (value !== initialFormValues.email) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        email:
+          value === ""
+            ? "This field is required"
+            : !isValidEmail(value)
+            ? "Invalid email format"
+            : "",
+      }));
+    }
+  };
+
+  const handleOldPasswordChange = (e) => {
+    const value = e.target.value;
+    setOldPassword(value);
+    if (value !== initialFormValues.oldPassword) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        oldPassword: value === "" ? "This field is required" : "",
+      }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    if (value !== initialFormValues.password) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        password:
+          value === ""
+            ? "This field is required"
+            : value.length < 8
+            ? "Password should be of minimum 8 characters"
+            : "",
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let valid = true;
-    let newErrors = { fullName: "", email: "", oldPassword: "", password: "" };
-
-    if (!fullName) {
-      newErrors.fullName = "This field is required";
-      valid = false;
-    }
-    if (!email) {
-      newErrors.email = "This field is required";
-      valid = false;
-    } else if (!isValidEmail(email)) {
-      newErrors.email = "Invalid email format";
-      valid = false;
-    }
-    if (!oldPassword) {
-      newErrors.oldPassword = "This field is required";
-      valid = false;
-    }
-    if (!password) {
-      newErrors.password = "This field is required";
-      valid = false;
-    } else if (password.length < 8) {
-      newErrors.password = "Password should be of minimum 8 characters";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-
-    if (!valid) {
-      if (!fullName) {
-        fullNameRef.current.focus();
-      } else if (!email || newErrors.email === "Invalid email format") {
-        emailRef.current.focus();
-      } else if (!oldPassword) {
-        oldPasswordRef.current.focus();
-      } else if (!password || password.length < 8) {
-        passwordRef.current.focus();
-      }
-    }
     const changes = {
       fullName: fullName !== initialFormValues.fullName,
       email: email !== initialFormValues.email,
-      oldPassword: oldPassword !== initialFormValues.oldPassword,
-      password: password !== initialFormValues.password,
+      oldPassword: oldPassword !== "",
+      password: password !== "",
     };
+
     const changesMade = Object.values(changes).some((change) => change);
 
     if (!changesMade) {
       displayToast("No changes have been made", false);
       return;
     }
+
+    let valid = true;
+    let newErrors = { fullName: "", email: "", oldPassword: "", password: "" };
+
+    if (changes.fullName && !fullName) {
+      newErrors.fullName = "This field is required";
+      valid = false;
+    }
+    if (changes.email) {
+      if (!email) {
+        newErrors.email = "This field is required";
+        valid = false;
+      } else if (!isValidEmail(email)) {
+        newErrors.email = "Invalid email format";
+        valid = false;
+      }
+    }
+    // console.log(oldPassword, password);
+    // Handle password and old password logic
+    if (changes.oldPassword) {
+      if (!password) {
+        newErrors.password =
+          "New password is required after changing old password";
+        valid = false;
+      } else if (password.length < 8) {
+        newErrors.password = "Password should be of minimum 8 characters";
+        valid = false;
+      }
+    } else if (changes.password) {
+      if (!oldPassword) {
+        newErrors.oldPassword = "Old password is required for verification";
+        valid = false;
+      } else if (password.length < 8) {
+        newErrors.password = "Password should be of minimum 8 characters";
+        valid = false;
+      }
+    }
+
+    setErrors(newErrors);
+
+    if (!valid) {
+      if (newErrors.fullName) {
+        fullNameRef.current.focus();
+      } else if (newErrors.email) {
+        emailRef.current.focus();
+      } else if (newErrors.oldPassword) {
+        oldPasswordRef.current.focus();
+      } else if (newErrors.password) {
+        passwordRef.current.focus();
+      }
+      return;
+    }
+
     if (valid) {
-      console.log(changesMade);
-      console.log(changes);
+      const updatePayload = {};
+      if (changes.fullName) updatePayload.fullName = fullName;
+      if (changes.email) updatePayload.email = email;
+      if (changes.oldPassword) updatePayload.oldPassword = oldPassword;
+      if (changes.password) updatePayload.password = password;
+
+      try {
+        const response = await updateProfile(updatePayload, accessToken);
+        const { success, msg, user } = response;
+        displayToast(msg, success);
+        if (success) {
+          localStorage.removeItem("isCookieFromProManage");
+          deleteAllCookies();
+          navigate("/");
+          displayToast("User logged out");
+          dispatch(clearLoggedInUser());
+        }
+      } catch (error) {
+        console.log(error);
+        displayToast("Failed to update profile", false);
+      }
     }
   };
 

@@ -21,6 +21,6 @@ router
    .post(verifyJWT, loginUserWithToken);
 router.route("/refresh-access-token").post(verifyJWT, refreshAccessToken);
 router.route("/logout").post(verifyJWT, logoutUser);
-router.route("update-profile").patch(verifyJWT, updateProfile);
+router.route("/update-profile").put(verifyJWT, updateProfile);
 
 export default router;

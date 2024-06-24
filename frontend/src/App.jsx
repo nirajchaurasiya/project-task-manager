@@ -13,6 +13,7 @@ import { saveLoggedInUser } from "./features/auth/authSlice";
 import { useDispatch } from "react-redux";
 import { loginUserWithToken } from "./apis/auth";
 import HomeLoader from "./components/HomeLoader";
+import { saveAccessToken } from "./features/accessToken/accessTokenSlice";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -25,9 +26,10 @@ export default function App() {
         const loginUser = await loginUserWithToken();
         const { user, success } = loginUser;
         if (success) {
-          setCookie("accessToken", user.accessToken, 0.4);
+          setCookie("accessToken", user.accessToken, 1);
           setCookie("refreshToken", user.refreshToken, 7);
           dispatch(saveLoggedInUser(user.user));
+          dispatch(saveAccessToken(user.accessToken));
           localStorage.setItem("isCookieFromProManage", true);
         }
       }

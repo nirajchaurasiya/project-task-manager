@@ -47,7 +47,7 @@ const login = asyncHandler(async (req, res, next) => {
          await generateAccessAndRefereshTokens(user._id);
 
       const loggedInUser = await User.findById(user._id).select(
-         "-refreshToken"
+         "-refreshToken -password"
       );
       return res
          .status(200)
@@ -78,12 +78,12 @@ const loginUserWithToken = asyncHandler(async (req, res, next) => {
          await generateAccessAndRefereshTokens(req.user._id);
 
       const loggedInUser = await User.findById(req.user._id).select(
-         "-refreshToken"
+         "-refreshToken -password"
       );
-
+      loggedInUser.accessToken = accessToken;
       return res
          .status(200)
-         .cookie("accessToken", accessToken, {})
+         .cookie("accessToken", accessToken, options)
          .cookie("refreshToken", refreshToken, options)
          .json(
             new ApiResponse(
@@ -195,11 +195,6 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
          throw new ApiError(401, "Refresh token is expired or used");
       }
 
-      const options = {
-         httpOnly: true,
-         secure: true,
-      };
-
       const { accessToken, newRefreshToken } =
          await generateAccessAndRefereshTokens(user._id);
 
@@ -233,10 +228,10 @@ const updateProfile = asyncHandler(async (req, res, next) => {
       const user = await User.findById(userId);
 
       if (!user) {
-         throw new ApiError(400, "User couldn't be found");
+         throw new ApiError(404, "User couldn't be found");
       }
 
-      const { email, fullName, password } = req?.body;
+      const { email, fullName, password, oldPassword } = req?.body;
 
       if (email) {
          user.email = email;
@@ -247,6 +242,17 @@ const updateProfile = asyncHandler(async (req, res, next) => {
       }
 
       if (password) {
+         const isOldPassMatched = await user.isPasswordCorrect(oldPassword);
+         if (!isOldPassMatched) {
+            throw new ApiError(400, "Old password does not match");
+         }
+
+         const isPasswordSameAsOldPass = await user.isPasswordCorrect(password);
+
+         if (isPasswordSameAsOldPass) {
+            throw new ApiError(422, "New password must differ");
+         }
+
          user.password = password;
       }
 
