@@ -1,15 +1,19 @@
 import React, { useEffect } from "react";
 import "../styles/auth-style.css";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+
 export default function AuthLayout({ children }) {
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
   const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     if (loggedInUser) {
       navigate("/home");
     }
-  }, []);
+  }, [loggedInUser, navigate]);
+
   return (
     <div className="auth-layout-container">
       {/* Side Image */}

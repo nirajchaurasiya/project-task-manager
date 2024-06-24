@@ -6,11 +6,7 @@ export default function TodoCard({ globalToggle }) {
   const [showCheckListToggle, setShowCheckListToggle] = useState(false);
 
   useEffect(() => {
-    // if (globalToggle) {
-    console.log(`globalToggle `, globalToggle);
-    console.log(`showCheckListToggle`, showCheckListToggle);
     setShowCheckListToggle(false);
-    // }
   }, [globalToggle]);
 
   return (

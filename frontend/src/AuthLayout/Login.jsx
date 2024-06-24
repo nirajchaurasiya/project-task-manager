@@ -1,19 +1,36 @@
-import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { HiOutlineMail } from "react-icons/hi";
 import { TfiLock } from "react-icons/tfi";
 import { CgEye } from "react-icons/cg";
 import { userCommonRoute } from "../routes/userCommonRoute";
 import { isValidEmail } from "../utils/emailValidation";
+import { loginUser } from "../apis/auth";
+import { toast } from "react-toastify";
+import { ToastContext } from "../context/ToastContext";
+import { setCookie } from "../utils/cookieActions";
+import { useDispatch } from "react-redux";
+import { saveLoggedInUser } from "../features/auth/authSlice";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
-
+  const dispatch = useDispatch();
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
+  const setToastText = useContext(ToastContext);
+  const displayToast = (text, success) => {
+    if (success) {
+      setToastText(text);
+      toast.success(text);
+    } else {
+      setToastText(text);
+      toast.error(text);
+    }
+  };
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let valid = true;
@@ -22,24 +39,40 @@ export default function Login() {
     if (!email) {
       newErrors.email = "This field is required";
       valid = false;
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Invalid email format";
+      valid = false;
     }
 
     if (!password) {
       newErrors.password = "This field is required";
+      valid = false;
+    } else if (password.length < 8) {
+      newErrors.password = "Password should be of minimum 8 characters";
       valid = false;
     }
 
     setErrors(newErrors);
 
     // Set focus after setting errors
-    if (!email) {
+    if (!email || !isValidEmail(email)) {
       emailRef.current.focus();
-    } else if (!password) {
+    } else if (!password || password.length < 8) {
       passwordRef.current.focus();
     }
 
     if (valid) {
-      console.log(userCommonRoute);
+      const response = await loginUser(email, password);
+      const { msg, success, data } = response;
+      if (success && data) {
+        const { accessToken, refreshToken, user } = data;
+        setCookie("accessToken", accessToken, 1);
+        setCookie("refreshToken", refreshToken, 1);
+        dispatch(saveLoggedInUser(user));
+        localStorage.setItem("isCookieFromProManage", true);
+        navigate("/home");
+      }
+      displayToast(msg, success);
     }
   };
 

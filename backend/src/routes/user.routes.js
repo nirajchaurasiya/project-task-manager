@@ -13,10 +13,12 @@ const router = Router();
 
 router.route("/login").post(login);
 router.route("/register").post(register);
-router.route("/login-user-with-access-token").post(loginUserWithToken);
 
 //secured routes
 
+router
+   .route("/login-user-with-access-token")
+   .post(verifyJWT, loginUserWithToken);
 router.route("/refresh-access-token").post(verifyJWT, refreshAccessToken);
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("update-profile").patch(verifyJWT, updateProfile);

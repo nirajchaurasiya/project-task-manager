@@ -1,10 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { Link } from "react-router-dom";
 import { HiOutlineMail } from "react-icons/hi";
 import { CiLock } from "react-icons/ci";
 import { CgEye } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa6";
 import { isValidEmail } from "../utils/emailValidation";
+import { registerUser } from "../apis/auth";
+import { ToastContext } from "../context/ToastContext";
+import { toast } from "react-toastify";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -22,8 +25,19 @@ export default function Register() {
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const confirmPasswordRef = useRef(null);
+  const setToastText = useContext(ToastContext);
 
-  const handleSubmit = (e) => {
+  const displayToast = (text, success) => {
+    if (success) {
+      setToastText(text);
+      toast.success(text);
+    } else {
+      setToastText(text);
+      toast.error(text);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let valid = true;
@@ -72,7 +86,8 @@ export default function Register() {
     }
 
     if (valid) {
-      // Handle form submission
+      const response = await registerUser(name, email, password);
+      displayToast(response.msg, response.success);
     }
   };
 

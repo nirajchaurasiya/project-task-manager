@@ -1,10 +1,29 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "../styles/sidebar.css";
 import { CiSettings } from "react-icons/ci";
 import { GoDatabase } from "react-icons/go";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { ToastContext } from "../context/ToastContext";
+import { toast } from "react-toastify";
+import { deleteAllCookies } from "../utils/cookieActions";
+import { clearLoggedInUser } from "../features/auth/authSlice";
 export default function Sidebar() {
   const [toggleLogout, setTogglelogout] = useState(false);
+  const setToastText = useContext(ToastContext);
+  const displayToast = (text) => {
+    setToastText(text);
+    toast.success(text);
+  };
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    deleteAllCookies();
+    dispatch(clearLoggedInUser());
+    localStorage.removeItem("isCookieFromProManage");
+    displayToast("User logged out");
+    navigate("/");
+  };
   return (
     <div className="sidebar-container">
       <div className="">
@@ -95,7 +114,7 @@ export default function Sidebar() {
               }}
             >
               <p>Are you sure you want to, Logout?</p>
-              <button>Yes, Logout</button>
+              <button onClick={handleLogout}>Yes, Logout</button>
               <button
                 onClick={() => {
                   setTogglelogout(!toggleLogout);

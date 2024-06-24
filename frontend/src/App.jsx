@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./styles/home.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./layout/Layout";
@@ -8,28 +8,81 @@ import Register from "./AuthLayout/Register";
 import Settings from "./components/Settings";
 import Analytics from "./components/Analytics";
 import Board from "./components/Board";
+import { accessToken, setCookie } from "./utils/cookieActions";
+import { saveLoggedInUser } from "./features/auth/authSlice";
+import { useDispatch } from "react-redux";
+import { loginUserWithToken } from "./apis/auth";
+import HomeLoader from "./components/HomeLoader";
+
 export default function App() {
+  const dispatch = useDispatch();
+  const [loader, setLoader] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoader(true);
+      if (accessToken) {
+        const loginUser = await loginUserWithToken();
+        const { user, success } = loginUser;
+        if (success) {
+          setCookie("accessToken", user.accessToken, 1);
+          setCookie("refreshToken", user.refreshToken, 1);
+          dispatch(saveLoggedInUser(user.user));
+          localStorage.setItem("isCookieFromProManage", true);
+        }
+      }
+      setLoader(false);
+    };
+    fetchUser();
+  }, [dispatch]);
+
+  if (loader) {
+    return <HomeLoader />;
+  }
+
   return (
     <main>
       <BrowserRouter>
         <Routes>
           <Route
             path="/register"
-            element={<AuthLayout children={<Register />} />}
+            element={
+              <AuthLayout>
+                <Register />
+              </AuthLayout>
+            }
           />
-
-          <Route path="/" element={<AuthLayout children={<Login />} />} />
-
-          <Route path="/home" element={<Layout children={<Board />} />} />
-
+          <Route
+            path="/"
+            element={
+              <AuthLayout>
+                <Login />
+              </AuthLayout>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <Layout loader={loader}>
+                <Board />
+              </Layout>
+            }
+          />
           <Route
             path="/analytics"
-            element={<Layout children={<Analytics />} />}
+            element={
+              <Layout loader={loader}>
+                <Analytics />
+              </Layout>
+            }
           />
-
           <Route
             path="/settings"
-            element={<Layout children={<Settings />} />}
+            element={
+              <Layout loader={loader}>
+                <Settings />
+              </Layout>
+            }
           />
         </Routes>
       </BrowserRouter>

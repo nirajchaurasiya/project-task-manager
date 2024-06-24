@@ -1,17 +1,18 @@
 import React, { useEffect } from "react";
 import "../styles/layout.css";
 import Sidebar from "../components/Sidebar";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-export default function Layout({ children }) {
+import { useNavigate } from "react-router-dom";
+
+export default function Layout({ children, loader }) {
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
   const navigate = useNavigate();
-  const location = useLocation();
+  const isCookieFromProManage = localStorage.getItem("isCookieFromProManage");
   useEffect(() => {
-    if (!loggedInUser) {
-      navigate("/");
+    if (!isCookieFromProManage) {
+      if (!loader) if (!loggedInUser) navigate("/");
     }
-  }, [location.pathname]);
+  }, [loggedInUser, isCookieFromProManage, loader]);
   return (
     <section className="dashboard-container">
       <div className="sidebar">

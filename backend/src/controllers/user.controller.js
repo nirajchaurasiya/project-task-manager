@@ -8,12 +8,13 @@ import { options } from "../utils/cookieOptions.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
    try {
+      // console.log(userId);
       const user = await User.findById(userId);
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
       user.refreshToken = refreshToken;
       await user.save({ validateBeforeSave: false });
-
+      // console.log(accessToken, refreshToken);
       return { accessToken, refreshToken };
    } catch (error) {
       throw new ApiError(
@@ -35,18 +36,18 @@ const login = asyncHandler(async (req, res, next) => {
       const user = await User.findOne({ email });
 
       if (!user) {
-         throw new ApiError(401, "User doesn't exists");
+         throw new ApiError(404, "User doesn't exists");
       }
       const isPasswordValid = await user.isPasswordCorrect(password);
 
       if (!isPasswordValid) {
-         throw new ApiError(403, "Invalid credentials");
+         throw new ApiError(405, "Invalid credentials");
       }
       const { accessToken, refreshToken } =
          await generateAccessAndRefereshTokens(user._id);
 
       const loggedInUser = await User.findById(user._id).select(
-         "-password -refreshToken"
+         "-refreshToken"
       );
       return res
          .status(200)
@@ -77,7 +78,7 @@ const loginUserWithToken = asyncHandler(async (req, res, next) => {
          await generateAccessAndRefereshTokens(req.user._id);
 
       const loggedInUser = await User.findById(req.user._id).select(
-         "-password -refreshToken"
+         "-refreshToken"
       );
 
       return res
@@ -108,13 +109,13 @@ const register = asyncHandler(async (req, res, next) => {
       const { email, fullName, password } = req.body;
 
       if ([email, fullName, password].some((e) => e.trim() === "")) {
-         throw new ApiError(400, "All fields are required");
+         throw new ApiError(404, "All fields are required");
       }
 
       const user = await User.findOne({ email });
 
       if (user) {
-         throw new ApiError(409, "User already exists");
+         throw new ApiError(400, "User already exists");
       }
 
       const createUser = await User.create({
@@ -251,9 +252,7 @@ const updateProfile = asyncHandler(async (req, res, next) => {
 
       await user.save();
 
-      const updatedUser = await User.findById(userId).select(
-         "-password -refreshToken"
-      );
+      const updatedUser = await User.findById(userId).select("-refreshToken");
 
       return res
          .status(200)

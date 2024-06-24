@@ -4,13 +4,15 @@ import Backlog from "../ui/board/Backlog";
 import Todo from "../ui/board/Todo";
 import InProgress from "../ui/board/InProgress";
 import Done from "../ui/board/Done";
+import { useSelector } from "react-redux";
 
 export default function Board() {
+  const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
   return (
     <div className="board-container">
       <div className="board-header">
         <p>
-          Welcome! <span>Niraj Chaurasiya</span>
+          Welcome! <span>{loggedInUser?.fullName}</span>
         </p>
         <span>23 Jun, 2024</span>
       </div>
