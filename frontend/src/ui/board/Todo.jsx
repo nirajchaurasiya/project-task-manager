@@ -294,7 +294,7 @@ export default function Todo() {
                   </div>
                   {showAssignPeople && (
                     <div name="assign" className="assign-options">
-                      {loggedInUser.chosenAssignees.length > 0 ? (
+                      {loggedInUser?.chosenAssignees?.length > 0 &&
                         loggedInUser.chosenAssignees.map((e) => (
                           <div key={e._id} className="assign-option">
                             <div className="user-details">
@@ -309,10 +309,7 @@ export default function Todo() {
                               {assignee === e.email ? "Assigned" : "Assign"}
                             </button>
                           </div>
-                        ))
-                      ) : (
-                        <span>No assignee found</span>
-                      )}
+                        ))}
                     </div>
                   )}
                 </div>

@@ -13,7 +13,11 @@ export default function TodoCard({ globalToggle, task }) {
     <div className="todo-list-container">
       <div className="todo-list-container-header">
         <div className="left-text">
-          <div className="alert-circle"></div>
+          {task?.priority === "low" && <div className="alert-circle"></div>}
+          {task?.priority === "moderate" && (
+            <div className="alert-circle"></div>
+          )}
+          {task?.priority === "high" && <div className="alert-circle"></div>}
           <p>{task?.priority} PRIORITY</p>
         </div>
         <BiDotsHorizontalRounded />
