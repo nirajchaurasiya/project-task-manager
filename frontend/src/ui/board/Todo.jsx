@@ -277,25 +277,25 @@ export default function Todo() {
                   {errors.priorityError && <span>{errors?.priorityError}</span>}
                 </div>
 
-                <div className="assign-to-task">
-                  <div className="assign-task-menu">
-                    <p>Assign to</p>
-                    <div
-                      className="select-button"
-                      onClick={() => {
-                        setShowAssignPeople(!showAssignPeople);
-                      }}
-                    >
-                      <p>{assignee}</p>
-                      <p>
-                        <MdKeyboardArrowDown />
-                      </p>
+                {loggedInUser?.chosenAssignees?.length > 0 && (
+                  <div className="assign-to-task">
+                    <div className="assign-task-menu">
+                      <p>Assign to</p>
+                      <div
+                        className="select-button"
+                        onClick={() => {
+                          setShowAssignPeople(!showAssignPeople);
+                        }}
+                      >
+                        <p>{assignee}</p>
+                        <p>
+                          <MdKeyboardArrowDown />
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {showAssignPeople && (
-                    <div name="assign" className="assign-options">
-                      {loggedInUser?.chosenAssignees?.length > 0 &&
-                        loggedInUser.chosenAssignees.map((e) => (
+                    {showAssignPeople && (
+                      <div name="assign" className="assign-options">
+                        {loggedInUser.chosenAssignees.map((e) => (
                           <div key={e._id} className="assign-option">
                             <div className="user-details">
                               <p>{e?.email?.slice(0, 2)}</p>
@@ -310,9 +310,10 @@ export default function Todo() {
                             </button>
                           </div>
                         ))}
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="checklist-length">
                   <p>
