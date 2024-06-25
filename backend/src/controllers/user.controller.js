@@ -271,6 +271,56 @@ const updateProfile = asyncHandler(async (req, res, next) => {
    }
 });
 
+const addAssignee = asyncHandler(async (req, res, next) => {
+   try {
+      // chosenAssignees
+      const userId = req?.user?._id;
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(404, "User couldn't be found");
+      }
+
+      const { email } = req?.body;
+
+      if (!email) {
+         throw new ApiError(400, "Email is mandatory");
+      }
+
+      // To check email if its exists
+
+      const isEmailExistsInChosenAssignes = user?.chosenAssignees?.find(
+         (e) => e.email === email
+      );
+
+      if (isEmailExistsInChosenAssignes) {
+         throw new ApiError(405, "Assignee already exists");
+      }
+
+      await User.findByIdAndUpdate(
+         userId,
+         { $push: { chosenAssignees: [{ email }] } },
+         { new: true }
+      );
+
+      // Retrieve the updated user and the newly added assignee
+      const updatedUser = await User.findById(userId);
+      const newAssignee = updatedUser.chosenAssignees.slice(-1)[0];
+      return res
+         .status(200)
+         .json(new ApiResponse(200, newAssignee, "Assignees added"));
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
 export {
    login,
    loginUserWithToken,
@@ -278,4 +328,5 @@ export {
    logoutUser,
    refreshAccessToken,
    updateProfile,
+   addAssignee,
 };

@@ -12,9 +12,13 @@ export const authSlice = createSlice({
     clearLoggedInUser: (state) => {
       state.loggedInUser = null;
     },
+    addAssigneeToRedux: (state, action) => {
+      state.loggedInUser?.chosenAssignees?.push(action.payload);
+    },
   },
 });
 
-export const { saveLoggedInUser, clearLoggedInUser } = authSlice.actions;
+export const { saveLoggedInUser, clearLoggedInUser, addAssigneeToRedux } =
+  authSlice.actions;
 
 export default authSlice.reducer;

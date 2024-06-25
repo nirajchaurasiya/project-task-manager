@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { HiOutlineMail } from "react-icons/hi";
 import { CiLock } from "react-icons/ci";
 import { CgEye } from "react-icons/cg";
@@ -20,7 +20,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
-
+  const navigate = useNavigate();
   const nameRef = useRef(null);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
@@ -31,6 +31,7 @@ export default function Register() {
     if (success) {
       setToastText(text);
       toast.success(text);
+      navigate("/");
     } else {
       setToastText(text);
       toast.error(text);

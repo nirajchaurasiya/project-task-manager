@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TbPlus } from "react-icons/tb";
 import { VscCollapseAll } from "react-icons/vsc";
 import TodoCard from "../TodoCard";
@@ -6,6 +6,7 @@ import { MdDelete, MdKeyboardArrowDown } from "react-icons/md";
 import { BiPlus } from "react-icons/bi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useSelector } from "react-redux";
 export default function Todo() {
   const [showTodo, setShowTodo] = useState(false);
   const [showAssignPeople, setShowAssignPeople] = useState(false);
@@ -15,7 +16,7 @@ export default function Todo() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hasUserClickedOnDateBtn, setHasUserClickedOnDateBtn] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState(null);
-
+  const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
   const addChecklistItem = () => {
     setChecklistItems([...checklistItems, checklistItems.length]);
   };
@@ -27,28 +28,28 @@ export default function Todo() {
     setShowDatePicker(false);
     setHasUserClickedOnDateBtn(true);
   };
-
+  const titleRef = useRef();
   useEffect(() => {
+    setChecklistItems([]);
+    setShowAssignPeople(false);
+    setAssignee("Add a assignee");
+    setSelectedPriority(null);
     setHasUserClickedOnDateBtn(false);
   }, [showTodo]);
-
-  console.log(showDatePicker);
-  const emails = [
-    "john.doe@example.com",
-    "jane.smith@example.net",
-    "alice.wonderland@example.org",
-    "bob.builder@example.co",
-    "charlie.brown@example.edu",
-    "david.jones@example.io",
-    "eva.green@example.tech",
-    "frank.white@example.biz",
-    "grace.hopper@example.dev",
-    "henry.ford@example.info",
-  ];
 
   const handlePriorityClick = (priority) => {
     setSelectedPriority(priority);
   };
+
+  const handleChecklistChange = (index, key, value) => {
+    const updatedItems = checklistItems.map((item, i) =>
+      i === index ? { ...item, [key]: value } : item
+    );
+    setChecklistItems(updatedItems);
+  };
+
+  // console.log(checklistItems);
+
   return (
     <>
       <div className="card-header">
@@ -84,7 +85,11 @@ export default function Todo() {
                   <label htmlFor="todo-title">
                     Title <span>*</span>
                   </label>
-                  <input type="text" placeholder="Enter Task Title" />
+                  <input
+                    ref={titleRef}
+                    type="text"
+                    placeholder="Enter Task Title"
+                  />
                 </div>
                 <div className="priority-selector-field">
                   <p>
@@ -136,46 +141,71 @@ export default function Todo() {
                   </div>
                   {showAssignPeople && (
                     <div name="assign" className="assign-options">
-                      {emails.map((e) => (
-                        <div key={e} className="assign-option">
-                          <div className="user-details">
-                            <p>{e?.slice(0, 2)}</p>
-                            <p>{e}</p>
+                      {loggedInUser.chosenAssignees.length > 0 ? (
+                        loggedInUser.chosenAssignees.map((e) => (
+                          <div key={e._id} className="assign-option">
+                            <div className="user-details">
+                              <p>{e?.email?.slice(0, 2)}</p>
+                              <p>{e?.email}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setAssignee(e?.email);
+                              }}
+                            >
+                              {assignee === e.email ? "Assigned" : "Assign"}
+                            </button>
                           </div>
-                          <button
-                            onClick={() => {
-                              setAssignee(e);
-                            }}
-                          >
-                            {assignee === e ? "Assigned" : "Assign"}
-                          </button>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <span>No assignee found</span>
+                      )}
                     </div>
                   )}
                 </div>
 
                 <div className="checklist-length">
                   <p>
-                    Checklist ({0}/{checklistItems.length}) <span>*</span>
+                    Checklist (
+                    {checklistItems.filter((item) => item.isChecked).length}/
+                    {checklistItems.length}) <span>*</span>
                   </p>
                 </div>
 
                 <div className="all-checklist-field-container">
-                  {checklistItems.map((e, index) => (
-                    <div key={e} className="checklists-field">
+                  {checklistItems.map((item, index) => (
+                    <div key={index} className="checklists-field">
                       <div className="select-checklist">
-                        <input type="checkbox" />
+                        <input
+                          type="checkbox"
+                          checked={item.isChecked}
+                          onChange={(e) =>
+                            handleChecklistChange(
+                              index,
+                              "isChecked",
+                              e.target.checked
+                            )
+                          }
+                        />
                         <input
                           placeholder="Add a task"
                           type="text"
                           className="select-checklist-input"
+                          value={item.title}
+                          onChange={(e) =>
+                            handleChecklistChange(
+                              index,
+                              "title",
+                              e.target.value
+                            )
+                          }
                         />
                       </div>
                       <MdDelete onClick={() => deleteChecklistItem(index)} />
                     </div>
                   ))}
                 </div>
+
                 <div className="add-new-box" onClick={addChecklistItem}>
                   <p>
                     <BiPlus />

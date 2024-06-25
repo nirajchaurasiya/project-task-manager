@@ -1,19 +1,81 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "../styles/board.css";
 import Backlog from "../ui/board/Backlog";
 import Todo from "../ui/board/Todo";
 import InProgress from "../ui/board/InProgress";
 import Done from "../ui/board/Done";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { GoPeople } from "react-icons/go";
-
+import { isValidEmail } from "../utils/emailValidation";
+import { addAssignee } from "../apis/user";
+import { ToastContext } from "../context/ToastContext";
+import { useNavigate } from "react-router-dom";
+import { addAssigneeToRedux } from "../features/auth/authSlice";
+import { toast } from "react-toastify";
 export default function Board() {
   const [showPeople, setShowPeople] = useState(false);
   const [addedAlert, setAddedAlert] = useState(false);
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
-  const handleAddEmail = () => {
-    setAddedAlert(true);
+  const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState({ email: "" });
+  const setToastText = useContext(ToastContext);
+  const accessToken = useSelector((state) => state.accessToken.accessToken);
+  const emailRef = useRef(null);
+  const displayToast = (text, success) => {
+    if (success) {
+      setToastText(text);
+      toast.success(text);
+    } else {
+      setToastText(text);
+      toast.error(text);
+    }
   };
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleAddEmail = async () => {
+    let emailError = "";
+    let valid = true;
+    if (!email) {
+      emailError = "This field is required";
+      valid = false;
+    } else if (!isValidEmail(email)) {
+      emailError = "Invalid email format";
+      valid = false;
+    }
+
+    if (!email || !isValidEmail(email)) {
+      emailRef.current.focus();
+      valid = false;
+    }
+    setErrors({ email: emailError });
+    console.log(valid);
+    if (valid) {
+      const response = await addAssignee(email, accessToken);
+      const { success, newAssignee, msg } = response;
+      console.log(newAssignee, msg);
+      if (success) {
+        dispatch(addAssigneeToRedux(newAssignee));
+        displayToast(msg, success);
+      } else {
+        displayToast(msg, success);
+      }
+    }
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    let emailError = "";
+    if (value === "") {
+      emailError = "This field is required";
+    } else if (!isValidEmail(value)) {
+      emailError = "Invalid email format";
+    }
+    setErrors({ email: emailError });
+  };
+  useEffect(() => {
+    setErrors({ email: "" });
+  }, [showPeople]);
   return (
     <div className="board-container">
       <div className="board-header">
@@ -89,8 +151,23 @@ export default function Board() {
                 }}
               >
                 <p className="add-people-text">Add people to the board</p>
-                <input placeholder="Enter the email" type="text" />
-                <span>This field is required</span>
+
+                <input
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="Enter the email"
+                  type="text"
+                  ref={emailRef}
+                  className={`input-field ${
+                    errors.email ? "error-border" : ""
+                  }`}
+                  style={
+                    errors.email ? { border: "1px solid var(--error-red)" } : {}
+                  }
+                />
+                {errors.email && (
+                  <span style={{ marginTop: "-15px" }}>{errors.email}</span>
+                )}
                 <div className="flex-button-overflow-container">
                   <button
                     onClick={() => {
