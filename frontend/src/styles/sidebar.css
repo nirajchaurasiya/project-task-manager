@@ -358,6 +358,9 @@
 }
 
 .checklist-length {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   font-family: Inter;
   font-size: 14px;
   font-weight: 500;
@@ -499,4 +502,9 @@
 }
 .priority-selector-options-hover.selected {
   background-color: rgb(226, 226, 226);
+}
+.priority-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }

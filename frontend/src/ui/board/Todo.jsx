@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { TbPlus } from "react-icons/tb";
 import { VscCollapseAll } from "react-icons/vsc";
 import TodoCard from "../TodoCard";
@@ -7,38 +7,98 @@ import { BiPlus } from "react-icons/bi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSelector } from "react-redux";
+import { ToastContext } from "../../context/ToastContext";
+import { toast } from "react-toastify";
+
 export default function Todo() {
   const [showTodo, setShowTodo] = useState(false);
   const [showAssignPeople, setShowAssignPeople] = useState(false);
   const [checklistItems, setChecklistItems] = useState([]);
-  const [assignee, setAssignee] = useState("Add a assignee");
+  const [assignee, setAssignee] = useState("Add an assignee");
   const [startDate, setStartDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hasUserClickedOnDateBtn, setHasUserClickedOnDateBtn] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState(null);
+  const [errors, setErrors] = useState({
+    titleError: "",
+    priorityError: "",
+    checkListError: "",
+  });
+
+  const setToastText = useContext(ToastContext);
+  const displayToast = (text, success) => {
+    if (success) {
+      setToastText(text);
+      toast.success(text);
+    } else {
+      setToastText(text);
+      toast.error(text);
+    }
+  };
+
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
+  const [title, setTitle] = useState("");
+
   const addChecklistItem = () => {
-    setChecklistItems([...checklistItems, checklistItems.length]);
+    const newChecklistItems = [
+      ...checklistItems,
+      { title: "", isChecked: false },
+    ];
+
+    let checkListError = "";
+    if (newChecklistItems.length === 0) {
+      checkListError = "Create at least one subtask";
+    }
+
+    setChecklistItems(newChecklistItems);
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      checkListError: newChecklistItems.length === 0 ? checkListError : "",
+    }));
   };
+
   const deleteChecklistItem = (index) => {
-    setChecklistItems(checklistItems.filter((_, i) => i !== index));
+    const newChecklistItems = checklistItems.filter((_, i) => i !== index);
+    let checkListError = "";
+    if (newChecklistItems.length === 0) {
+      checkListError = "Create at least one subtask";
+    }
+    setChecklistItems(newChecklistItems);
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      checkListError: checkListError,
+    }));
   };
+
   const handleDateChange = (date) => {
     setStartDate(date);
     setShowDatePicker(false);
     setHasUserClickedOnDateBtn(true);
   };
+
   const titleRef = useRef();
+
   useEffect(() => {
     setChecklistItems([]);
     setShowAssignPeople(false);
-    setAssignee("Add a assignee");
+    setAssignee("Add an assignee");
     setSelectedPriority(null);
     setHasUserClickedOnDateBtn(false);
+    setTitle("");
+    setErrors({ titleError: "", priorityError: "", checkListError: "" });
   }, [showTodo]);
 
   const handlePriorityClick = (priority) => {
     setSelectedPriority(priority);
+    let priorityError = "";
+    if (!priority) {
+      priorityError = "This field is required";
+    }
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      priorityError: priorityError,
+    }));
   };
 
   const handleChecklistChange = (index, key, value) => {
@@ -48,7 +108,64 @@ export default function Todo() {
     setChecklistItems(updatedItems);
   };
 
-  // console.log(checklistItems);
+  const handleTaskCreation = async () => {
+    let valid = true;
+    let newErrors = { titleError: "", priorityError: "", checkListError: "" };
+
+    if (!title) {
+      newErrors.titleError = "This field is required";
+      titleRef.current.focus();
+      valid = false;
+      displayToast("Title is required", false);
+      setErrors(newErrors);
+      return;
+    }
+
+    if (!selectedPriority) {
+      newErrors.priorityError = "This field is required";
+      valid = false;
+      displayToast("Priority is required", false);
+      setErrors(newErrors);
+      return;
+    }
+
+    if (checklistItems.length < 1) {
+      newErrors.checkListError = "Create at least one subtask";
+      valid = false;
+      displayToast("At least one subtask is required to create a Task", false);
+      setErrors(newErrors);
+      return;
+    }
+
+    for (let i = 0; i < checklistItems.length; i++) {
+      if (!checklistItems[i].title) {
+        newErrors.checkListError = "All subtasks must have a title";
+        valid = false;
+        displayToast("All subtasks must have a title", false);
+        setErrors(newErrors);
+        return;
+      } else {
+        newErrors.checkListError = "";
+        setErrors(newErrors);
+      }
+    }
+
+    if (valid) {
+      console.log(title, selectedPriority, checklistItems);
+      console.log(startDate, assignee);
+      // Submit the form or perform the task creation
+    }
+  };
+
+  const handleChangeTitle = (e) => {
+    const value = e.target.value;
+    setTitle(value);
+    let titleError = "";
+    if (value === "") {
+      titleError = "This field is required";
+    }
+    setErrors((prevErrors) => ({ ...prevErrors, titleError: titleError }));
+  };
 
   return (
     <>
@@ -87,41 +204,56 @@ export default function Todo() {
                   </label>
                   <input
                     ref={titleRef}
+                    value={title}
+                    onChange={handleChangeTitle}
                     type="text"
                     placeholder="Enter Task Title"
+                    style={
+                      errors.titleError
+                        ? { border: "1px solid var(--error-red)" }
+                        : {}
+                    }
                   />
+                  {errors?.titleError && (
+                    <span style={{ marginTop: "5px" }}>
+                      {errors.titleError}
+                    </span>
+                  )}
                 </div>
-                <div className="priority-selector-field">
-                  <p>
-                    Select Priority <span>*</span>
-                  </p>
-                  <div className="priority-selector-options">
-                    <div
-                      className={`priority-selector-options-hover ${
-                        selectedPriority === "high" ? "selected" : ""
-                      }`}
-                      onClick={() => handlePriorityClick("high")}
-                    >
-                      <p className="high-priority-point"></p> HIGH PRIORITY
-                    </div>
-                    <div
-                      className={`priority-selector-options-hover ${
-                        selectedPriority === "moderate" ? "selected" : ""
-                      }`}
-                      onClick={() => handlePriorityClick("moderate")}
-                    >
-                      <p className="moderate-priority-point"></p> MODERATE
-                      PRIORITY
-                    </div>
-                    <div
-                      className={`priority-selector-options-hover ${
-                        selectedPriority === "low" ? "selected" : ""
-                      }`}
-                      onClick={() => handlePriorityClick("low")}
-                    >
-                      <p className="low-priority-point"></p> LOW PRIORITY
+                <div className="priority-wrapper">
+                  <div className="priority-selector-field">
+                    <p>
+                      Select Priority <span>*</span>
+                    </p>
+                    <div className="priority-selector-options">
+                      <div
+                        className={`priority-selector-options-hover ${
+                          selectedPriority === "high" ? "selected" : ""
+                        }`}
+                        onClick={() => handlePriorityClick("high")}
+                      >
+                        <p className="high-priority-point"></p> HIGH PRIORITY
+                      </div>
+                      <div
+                        className={`priority-selector-options-hover ${
+                          selectedPriority === "moderate" ? "selected" : ""
+                        }`}
+                        onClick={() => handlePriorityClick("moderate")}
+                      >
+                        <p className="moderate-priority-point"></p> MODERATE
+                        PRIORITY
+                      </div>
+                      <div
+                        className={`priority-selector-options-hover ${
+                          selectedPriority === "low" ? "selected" : ""
+                        }`}
+                        onClick={() => handlePriorityClick("low")}
+                      >
+                        <p className="low-priority-point"></p> LOW PRIORITY
+                      </div>
                     </div>
                   </div>
+                  {errors.priorityError && <span>{errors?.priorityError}</span>}
                 </div>
 
                 <div className="assign-to-task">
@@ -170,6 +302,9 @@ export default function Todo() {
                     {checklistItems.filter((item) => item.isChecked).length}/
                     {checklistItems.length}) <span>*</span>
                   </p>
+                  {errors.checkListError && (
+                    <span>{errors.checkListError}</span>
+                  )}
                 </div>
 
                 <div className="all-checklist-field-container">
@@ -199,6 +334,11 @@ export default function Todo() {
                               e.target.value
                             )
                           }
+                          // style={
+                          //   !item.title && errors.checkListError
+                          //     ? { border: "1px solid var(--error-red)" }
+                          //     : {}
+                          // }
                         />
                       </div>
                       <MdDelete onClick={() => deleteChecklistItem(index)} />
@@ -232,7 +372,7 @@ export default function Todo() {
                 )}
                 <div className="save-cancel-buttons">
                   <button onClick={() => setShowTodo(false)}>Cancel</button>
-                  <button>Save</button>
+                  <button onClick={handleTaskCreation}>Save</button>
                 </div>
               </div>
             </div>
