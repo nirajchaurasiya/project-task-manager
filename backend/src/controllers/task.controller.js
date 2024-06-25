@@ -1,8 +1,8 @@
-import { Task } from "../models/task.model";
-import { User } from "../models/user.model";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { Task } from "../models/task.model.js";
+import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createTask = asyncHandler(async (req, res, next) => {
    try {
@@ -18,22 +18,23 @@ const createTask = asyncHandler(async (req, res, next) => {
          throw new ApiError(404, "User couldn't be found");
       }
 
-      const { title, priority, checkList, dueDate, assignedTo } = req?.body;
+      const { title, priority, checklist, dueDate, assignedTo } = req?.body;
 
-      if (!title || !priority || checkList.length < 1) {
+      if (!title || !priority || checklist?.length < 1) {
          throw new ApiError(400, "All fields are mandatory");
       }
-
+      console.log(checklist);
+      console.log(req?.body);
       const task = await Task.create({
          title,
          priority,
-         checkList,
+         checklist,
          dueDate: dueDate ? dueDate : "",
          assignedTo: assignedTo ? assignedTo : "",
          owner: userId,
       });
 
-      await task.create();
+      await task.save();
 
       const createdTask = await Task.findById(task._id);
 
@@ -48,6 +49,7 @@ const createTask = asyncHandler(async (req, res, next) => {
          .status(200)
          .json(new ApiResponse(200, createdTask, "Task created"));
    } catch (error) {
+      console.log(error);
       if (error instanceof ApiError) {
          return next(error);
       }
@@ -172,4 +174,334 @@ const updateTask = asyncHandler(async (req, res, next) => {
    }
 });
 
-export { createTask, deleteTask, updateTask };
+const getTasksCreatedToday = async (req, res) => {
+   try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const tasks = await Task.aggregate([
+         {
+            $match: {
+               createdAt: {
+                  $gte: today,
+               },
+            },
+         },
+         {
+            $addFields: {
+               status: {
+                  $switch: {
+                     branches: [
+                        {
+                           case: { $eq: ["$state", "inprogress"] },
+                           then: "In Progress",
+                        },
+                        { case: { $eq: ["$state", "todo"] }, then: "To do" },
+                        {
+                           case: { $eq: ["$state", "backlog"] },
+                           then: "Backlog",
+                        },
+                        { case: { $eq: ["$state", "done"] }, then: "Done" },
+                     ],
+                     default: "Unknown",
+                  },
+               },
+            },
+         },
+         {
+            $sort: {
+               createdAt: 1, // Sort by createdAt ascending
+            },
+         },
+         {
+            $group: {
+               _id: "$status",
+               tasks: {
+                  $push: {
+                     id: "$_id",
+                     title: "$title",
+                     checklist: {
+                        $map: {
+                           input: "$checkList",
+                           as: "item",
+                           in: {
+                              task: "$$item.title",
+                              done: "$$item.isCompleted",
+                              _id: "$$item._id",
+                           },
+                        },
+                     },
+                     priority: "$priority",
+                     "due date": "$dueDate",
+                     status: "$status",
+                  },
+               },
+            },
+         },
+         {
+            $project: {
+               _id: 0,
+               status: "$_id",
+               tasks: 1,
+            },
+         },
+      ]);
+
+      const formattedTasks = {
+         inprogress: [],
+         todo: [],
+         backlog: [],
+         done: [],
+      };
+
+      tasks.forEach((task) => {
+         formattedTasks[task.status] = task.tasks;
+      });
+
+      console.log(formattedTasks);
+      return res
+         .status(200)
+         .json(
+            new ApiResponse(
+               200,
+               { formattedTasks },
+               "Formatted tasks created today retrieved"
+            )
+         );
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+};
+
+const getFormattedTasksThisWeek = async (req, res) => {
+   try {
+      const startOfWeek = new Date();
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+      const endOfWeek = new Date();
+      endOfWeek.setHours(23, 59, 59, 999);
+      endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
+
+      const tasks = await Task.aggregate([
+         {
+            $match: {
+               createdAt: {
+                  $gte: startOfWeek,
+                  $lte: endOfWeek,
+               },
+            },
+         },
+         {
+            $addFields: {
+               status: {
+                  $switch: {
+                     branches: [
+                        {
+                           case: { $eq: ["$state", "inprogress"] },
+                           then: "inprogress",
+                        },
+                        { case: { $eq: ["$state", "todo"] }, then: "todo" },
+                        {
+                           case: { $eq: ["$state", "backlog"] },
+                           then: "backlog",
+                        },
+                        { case: { $eq: ["$state", "done"] }, then: "done" },
+                     ],
+                     default: "Unknown",
+                  },
+               },
+            },
+         },
+         {
+            $sort: {
+               createdAt: 1, // Sort by createdAt ascending
+            },
+         },
+         {
+            $group: {
+               _id: "$status",
+               tasks: {
+                  $push: {
+                     _id: "$_id",
+                     title: "$title",
+                     priority: "$priority",
+                     dueDate: "$dueDate",
+                     checklist: {
+                        $map: {
+                           input: "$checklist",
+                           as: "item",
+                           in: {
+                              title: "$$item.title",
+                              done: "$$item.isCompleted",
+                              _id: "$$item._id",
+                           },
+                        },
+                     },
+                     assignedTo: "$assignedTo",
+                     state: "$state",
+                     isCompleted: "$isCompleted",
+                     owner: "$owner",
+                     createdAt: "$createdAt",
+                     updatedAt: "$updatedAt",
+                  },
+               },
+            },
+         },
+         {
+            $project: {
+               _id: 0,
+               status: "$_id",
+               tasks: 1,
+            },
+         },
+      ]);
+
+      const formattedTasks = {
+         inprogress: [],
+         todo: [],
+         backlog: [],
+         done: [],
+      };
+
+      tasks.forEach((task) => {
+         formattedTasks[task.status] = task.tasks;
+      });
+
+      console.log(formattedTasks);
+      return res
+         .status(200)
+         .json(
+            new ApiResponse(
+               200,
+               { formattedTasks },
+               "Formatted tasks retrieved"
+            )
+         );
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+};
+
+const getTasksCreatedThisMonth = async (req, res) => {
+   try {
+      const startOfMonth = new Date();
+      startOfMonth.setHours(0, 0, 0, 0);
+      startOfMonth.setDate(1); // Set to the first day of the current month
+
+      const endOfMonth = new Date();
+      endOfMonth.setHours(23, 59, 59, 999);
+      endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0); // Set to the last day of the current month
+
+      const tasks = await Task.aggregate([
+         {
+            $match: {
+               createdAt: {
+                  $gte: startOfMonth,
+                  $lte: endOfMonth,
+               },
+            },
+         },
+         {
+            $addFields: {
+               status: {
+                  $switch: {
+                     branches: [
+                        {
+                           case: { $eq: ["$state", "inprogress"] },
+                           then: "In Progress",
+                        },
+                        { case: { $eq: ["$state", "todo"] }, then: "To do" },
+                        {
+                           case: { $eq: ["$state", "backlog"] },
+                           then: "Backlog",
+                        },
+                        { case: { $eq: ["$state", "done"] }, then: "Done" },
+                     ],
+                     default: "Unknown",
+                  },
+               },
+            },
+         },
+         {
+            $sort: {
+               createdAt: 1, // Sort by createdAt ascending
+            },
+         },
+         {
+            $group: {
+               _id: "$status",
+               tasks: {
+                  $push: {
+                     id: "$_id",
+                     title: "$title",
+                     checklist: {
+                        $map: {
+                           input: "$checkList",
+                           as: "item",
+                           in: {
+                              task: "$$item.title",
+                              done: "$$item.isCompleted",
+                              _id: "$$item._id",
+                           },
+                        },
+                     },
+                     priority: "$priority",
+                     "due date": "$dueDate",
+                     status: "$status",
+                  },
+               },
+            },
+         },
+         {
+            $project: {
+               _id: 0,
+               status: "$_id",
+               tasks: 1,
+            },
+         },
+      ]);
+
+      const formattedTasks = {
+         inprogress: [],
+         todo: [],
+         backlog: [],
+         done: [],
+      };
+
+      tasks.forEach((task) => {
+         formattedTasks[task.status] = task.tasks;
+      });
+
+      console.log(formattedTasks);
+      return res
+         .status(200)
+         .json(
+            new ApiResponse(
+               200,
+               { formattedTasks },
+               "Formatted tasks created this month retrieved"
+            )
+         );
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+};
+
+export {
+   createTask,
+   deleteTask,
+   updateTask,
+   getTasksCreatedToday,
+   getFormattedTasksThisWeek,
+   getTasksCreatedThisMonth,
+};

@@ -1,51 +1,56 @@
 import mongoose, { mongo } from "mongoose";
 
-const taskSchema = new mongoose.Schema({
-   title: {
-      type: String,
-      required: true,
-   },
-   priority: {
-      type: String,
-      enum: ["low", "moderate", "high"],
-      required: true,
-   },
-   dueDate: {
-      type: Date,
-      default: "",
-   },
-   checkList: [
-      {
-         title: {
-            type: String,
-            required: true,
-         },
-         isCompleted: {
-            type: Boolean,
-            default: false,
-         },
+const taskSchema = new mongoose.Schema(
+   {
+      title: {
+         type: String,
+         required: true,
       },
-   ],
-   assignedTo: {
-      type: String,
-      default: "",
+      priority: {
+         type: String,
+         enum: ["low", "moderate", "high"],
+         required: true,
+      },
+      dueDate: {
+         type: Date,
+         default: "",
+      },
+      checklist: [
+         {
+            title: {
+               type: String,
+               required: true,
+            },
+            isCompleted: {
+               type: Boolean,
+               default: false,
+            },
+         },
+      ],
+      assignedTo: {
+         type: String,
+         default: "",
+      },
+      state: {
+         type: String,
+         enum: ["backlog", "todo", "inprogress", "done"],
+         default: "todo",
+         required: true,
+      },
+      isCompleted: {
+         type: Boolean,
+         default: false,
+         required: true,
+      },
+      owner: {
+         type: mongoose.Schema.ObjectId,
+         ref: "User",
+         required: true,
+      },
    },
-   state: {
-      type: String,
-      enum: ["backlog", "todo", "inprogress", "done"],
-      default: "todo",
-      required: true,
-   },
-   isCompleted: {
-      type: Boolean,
-      default: false,
-      required: true,
-   },
-   owner: {
-      type: mongoose.Types.ObjectId(),
-      ref: "User",
-      required: true,
-   },
-});
+   {
+      timestamps: true,
+   }
+);
 
 export const Task = mongoose.model("Task", taskSchema);

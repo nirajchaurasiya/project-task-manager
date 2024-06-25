@@ -1,18 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { VscCollapseAll } from "react-icons/vsc";
 import TodoCard from "../TodoCard";
+import { useSelector } from "react-redux";
 export default function Done() {
+  const [globalToggle, setGlobalToggle] = useState(false);
+
+  const handleGlobalToggle = () => {
+    setGlobalToggle(!globalToggle);
+  };
+  const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
+  console.log(tasks);
   return (
     <>
       <div className="card-header">
         <p>Done</p>
         <p>
-          <VscCollapseAll />
+          <VscCollapseAll onClick={handleGlobalToggle} />
         </p>
       </div>
-      {[1, 2, 3, 4, 5].map((e) => (
-        <TodoCard key={e} />
-      ))}
+      {tasks &&
+        tasks?.done.map((task, index) => (
+          <TodoCard key={index} globalToggle={globalToggle} task={task} />
+        ))}
     </>
   );
 }

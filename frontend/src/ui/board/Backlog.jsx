@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { VscCollapseAll } from "react-icons/vsc";
 import TodoCard from "../TodoCard";
+import { useSelector } from "react-redux";
 
 export default function Backlog() {
   const [globalToggle, setGlobalToggle] = useState(false);
@@ -8,7 +9,8 @@ export default function Backlog() {
   const handleGlobalToggle = () => {
     setGlobalToggle(!globalToggle);
   };
-
+  const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
+  console.log(tasks);
   return (
     <>
       <div className="card-header">
@@ -17,9 +19,10 @@ export default function Backlog() {
           <VscCollapseAll onClick={handleGlobalToggle} />
         </p>
       </div>
-      {[1, 2, 3, 4, 5].map((e) => (
-        <TodoCard key={e} globalToggle={globalToggle} />
-      ))}
+      {tasks &&
+        tasks?.backlog.map((task, index) => (
+          <TodoCard key={index} globalToggle={globalToggle} task={task} />
+        ))}
     </>
   );
 }

@@ -6,9 +6,11 @@ import { MdDelete, MdKeyboardArrowDown } from "react-icons/md";
 import { BiPlus } from "react-icons/bi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ToastContext } from "../../context/ToastContext";
 import { toast } from "react-toastify";
+import { createTask } from "../../apis/tasks";
+import { addSingleTask } from "../../features/tasks/formattedTasksSlice";
 
 export default function Todo() {
   const [showTodo, setShowTodo] = useState(false);
@@ -24,7 +26,13 @@ export default function Todo() {
     priorityError: "",
     checkListError: "",
   });
-
+  const [globalToggle, setGlobalToggle] = useState(false);
+  const accessToken = useSelector((state) => state.accessToken.accessToken);
+  const handleGlobalToggle = () => {
+    setGlobalToggle(!globalToggle);
+  };
+  const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
+  console.log(tasks);
   const setToastText = useContext(ToastContext);
   const displayToast = (text, success) => {
     if (success) {
@@ -88,7 +96,7 @@ export default function Todo() {
     setTitle("");
     setErrors({ titleError: "", priorityError: "", checkListError: "" });
   }, [showTodo]);
-
+  const dispatch = useDispatch();
   const handlePriorityClick = (priority) => {
     setSelectedPriority(priority);
     let priorityError = "";
@@ -153,7 +161,19 @@ export default function Todo() {
     if (valid) {
       console.log(title, selectedPriority, checklistItems);
       console.log(startDate, assignee);
-      // Submit the form or perform the task creation
+      const response = await createTask(accessToken, {
+        title,
+        priority: selectedPriority,
+        checklist: checklistItems,
+        dueDate: startDate && hasUserClickedOnDateBtn ? startDate : "",
+        assignedTo: assignee,
+      });
+      const { success, msg, task } = response;
+
+      if (success) {
+        dispatch(addSingleTask(task));
+      }
+      displayToast(msg, success);
     }
   };
 
@@ -177,12 +197,13 @@ export default function Todo() {
               setShowTodo(!showTodo);
             }}
           />
-          <VscCollapseAll />
+          <VscCollapseAll onClick={handleGlobalToggle} />
         </p>
       </div>
-      {[1, 2, 3, 4, 5].map((e) => (
-        <TodoCard key={e} />
-      ))}
+      {tasks &&
+        tasks?.todo.map((task, index) => (
+          <TodoCard key={index} globalToggle={globalToggle} task={task} />
+        ))}
       {showTodo && (
         <div
           className="overflow-container"

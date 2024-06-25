@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
 
-export default function TodoCard({ globalToggle }) {
+export default function TodoCard({ globalToggle, task }) {
   const [showCheckListToggle, setShowCheckListToggle] = useState(false);
-
+  console.log(task);
   useEffect(() => {
     setShowCheckListToggle(false);
   }, [globalToggle]);
@@ -14,15 +14,15 @@ export default function TodoCard({ globalToggle }) {
       <div className="todo-list-container-header">
         <div className="left-text">
           <div className="alert-circle"></div>
-          <p>HIGH PRIORITY</p>
+          <p>{task?.priority} PRIORITY</p>
         </div>
         <BiDotsHorizontalRounded />
       </div>
-      <p className="title">Go to Gym</p>
+      <p className="title">{task?.title}</p>
       <div className="check-list-container">
         <div className="todo-list-checklist-count">
           <p>
-            Checklist <span>(1/2)</span>
+            Checklist <span>(0/{task?.checklist?.length})</span>
           </p>
         </div>
         <button
@@ -34,18 +34,18 @@ export default function TodoCard({ globalToggle }) {
       </div>
       {showCheckListToggle && (
         <div className="checklist-tasks">
-          <div className="checklist-task">
-            <input type="checkbox" className="checkbox" checked="" />
-            <p className="task">do 1 hour exercise daily</p>
-          </div>
-          <div className="checklist-task">
-            <input type="checkbox" className="checkbox" />
-            <p className="task">do 2 hour exercise daily</p>
-          </div>
+          {task?.checklist?.map((e) => (
+            <div key={e?.id} className="checklist-task">
+              <input type="checkbox" className="checkbox" checked="" />
+              <p className="task">{e?.title}</p>
+            </div>
+          ))}
         </div>
       )}
       <div className="all-important-details">
-        <p className="due-date">Jun 24</p>
+        {task?.dueData && (
+          <p className="due-date">{task?.dueData && "Jun 24"}</p>
+        )}
         <div className="other-details">
           {["TO DO", "IN PROGRESS", "DONE"].map((e) => (
             <p key={e}>{e}</p>
