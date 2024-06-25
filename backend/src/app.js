@@ -7,6 +7,9 @@ const app = express();
 app.use(
    cors({
       origin: "*",
+      // OR
+      // origin: process.env.CORS_ORIGIN
+      // secure:true
    })
 );
 

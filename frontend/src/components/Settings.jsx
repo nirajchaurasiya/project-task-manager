@@ -194,7 +194,7 @@ export default function Settings() {
           localStorage.removeItem("isCookieFromProManage");
           deleteAllCookies();
           navigate("/");
-          displayToast("User logged out");
+          displayToast("Please login again");
           dispatch(clearLoggedInUser());
         }
       } catch (error) {

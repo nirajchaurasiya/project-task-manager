@@ -101,12 +101,12 @@ export default function Sidebar() {
       {/* For logut */}
       {toggleLogout && (
         <div
-          className="logout-container"
+          className="overflow-container"
           onClick={() => {
             setTogglelogout(!toggleLogout);
           }}
         >
-          <div className="logout-mid-container">
+          <div className="overflow-mid-container">
             <div
               className="main-content"
               onClick={(e) => {

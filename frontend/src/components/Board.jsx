@@ -9,7 +9,11 @@ import { GoPeople } from "react-icons/go";
 
 export default function Board() {
   const [showPeople, setShowPeople] = useState(false);
+  const [addedAlert, setAddedAlert] = useState(false);
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
+  const handleAddEmail = () => {
+    setAddedAlert(true);
+  };
   return (
     <div className="board-container">
       <div className="board-header">
@@ -21,7 +25,11 @@ export default function Board() {
       <div className="board-second-options">
         <div className="board-add-people">
           <p>Board</p>
-          <p>
+          <p
+            onClick={() => {
+              setShowPeople(!showPeople);
+            }}
+          >
             <GoPeople />
             <span>Add people</span>
           </p>
@@ -46,6 +54,58 @@ export default function Board() {
           <Done />
         </div>
       </div>
+      {showPeople && (
+        <div
+          className="overflow-container"
+          onClick={() => {
+            setShowPeople(!showPeople);
+          }}
+        >
+          <div className="overflow-mid-container">
+            {addedAlert ? (
+              <div
+                className="main-content"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <div className="alert-notification">
+                  <p>Ramgupta@gmail.com added to board</p>
+                  <button
+                    onClick={() => {
+                      setShowPeople(false);
+                      setAddedAlert(false);
+                    }}
+                  >
+                    Okay, got it!
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="main-content"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <p className="add-people-text">Add people to the board</p>
+                <input placeholder="Enter the email" type="text" />
+                <span>This field is required</span>
+                <div className="flex-button-overflow-container">
+                  <button
+                    onClick={() => {
+                      setShowPeople(!showPeople);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button onClick={handleAddEmail}>Add Email</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
