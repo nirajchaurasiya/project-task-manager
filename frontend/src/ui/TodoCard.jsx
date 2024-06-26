@@ -3,11 +3,14 @@ import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { formatDueDate } from "../utils/formatDate";
 import { taskPhase } from "../utils/tasksPhases";
-import { updateChecklist } from "../apis/tasks";
+import { updateChecklist, updateTaskPhase } from "../apis/tasks";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContext } from "../context/ToastContext";
 import { toast } from "react-toastify";
-import { updateCheckListInStore } from "../features/tasks/formattedTasksSlice";
+import {
+  updateCheckListInStore,
+  updateTaskState,
+} from "../features/tasks/formattedTasksSlice";
 
 export default function TodoCard({ globalToggle, task }) {
   const [showCheckListToggle, setShowCheckListToggle] = useState(false);
@@ -29,10 +32,17 @@ export default function TodoCard({ globalToggle, task }) {
   }, [task]);
 
   useEffect(() => {
-    const expandedCheckList =
-      JSON.parse(localStorage.getItem("expandedCheckList")) || [];
-    setShowCheckListToggle(expandedCheckList.includes(task._id));
-  }, [task]);
+    // Check if globalToggle is true, then reset localStorage
+    if (globalToggle) {
+      localStorage.removeItem("expandedCheckList");
+      setShowCheckListToggle(false);
+    } else {
+      // Otherwise, initialize showCheckListToggle from localStorage
+      const expandedCheckList =
+        JSON.parse(localStorage.getItem("expandedCheckList")) || [];
+      setShowCheckListToggle(expandedCheckList.includes(task._id));
+    }
+  }, [globalToggle, task]);
 
   const setToastText = useContext(ToastContext);
 
@@ -50,14 +60,20 @@ export default function TodoCard({ globalToggle, task }) {
   const accessToken = useSelector((state) => state.accessToken.accessToken);
 
   const handleChangeTaskPhase = async (phase) => {
-    const changedItems = Object.keys(checkedItems).filter(
-      (itemId) =>
-        checkedItems[itemId] !==
-        task.checklist.find((e) => e._id === itemId)?.isChecked
-    );
-    console.log(phase);
-    console.log(task);
-    console.log("Changed items:", changedItems);
+    const taskToUpdateWithPhase = {
+      state: phase,
+      taskId: task._id,
+    };
+    const response = await updateTaskPhase(taskToUpdateWithPhase, accessToken);
+
+    const { success, msg } = response;
+    const updatedTask = response.task;
+    // console.log(`task `, updatedTask);
+    if (success) {
+      dispatch(updateTaskState(updatedTask));
+    }
+
+    displayToast(msg, success);
   };
 
   const handleCheckboxChange = async (itemId) => {

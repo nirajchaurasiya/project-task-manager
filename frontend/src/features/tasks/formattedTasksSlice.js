@@ -52,6 +52,28 @@ export const formattedTasksSlice = createSlice({
           break;
       }
     },
+    updateTaskState: (state, action) => {
+      const updatedTask = action.payload;
+      const taskId = updatedTask._id;
+
+      // Remove the task from its previous state
+      Object.keys(state.formattedTasks).forEach((key) => {
+        state.formattedTasks[key] = state.formattedTasks[key].filter(
+          (task) => task._id !== taskId
+        );
+      });
+
+      // Add the task to its new state
+      state.formattedTasks[updatedTask.state].push({
+        ...updatedTask,
+        state: updatedTask.state,
+      });
+    },
+    addSingleTask: (state, action) => {
+      const newTask = action.payload;
+      state.formattedTasks[newTask.state].push(newTask);
+    },
+
     addSingleTask: (state, action) => {
       // Logic to add a single task to the appropriate state array
       const newTask = action.payload;
@@ -75,7 +97,11 @@ export const formattedTasksSlice = createSlice({
   },
 });
 
-export const { saveFormattedTasks, addSingleTask, updateCheckListInStore } =
-  formattedTasksSlice.actions;
+export const {
+  saveFormattedTasks,
+  addSingleTask,
+  updateCheckListInStore,
+  updateTaskState,
+} = formattedTasksSlice.actions;
 
 export default formattedTasksSlice.reducer;

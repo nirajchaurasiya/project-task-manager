@@ -194,7 +194,6 @@ const updateChecklist = asyncHandler(async (req, res, next) => {
          throw new ApiError(400, "Task ID is mandatory");
       }
 
-      // Update checklist items based on request body
       const { changedItems } = req.body;
 
       if (!Array.isArray(changedItems)) {
@@ -204,7 +203,6 @@ const updateChecklist = asyncHandler(async (req, res, next) => {
          );
       }
 
-      // Construct update object for findByIdAndUpdate
       const updateObj = {};
       changedItems.forEach(({ itemId, isChecked }) => {
          updateObj[`checklist.$[elem${itemId}].isChecked`] = isChecked;
@@ -243,6 +241,55 @@ const updateChecklist = asyncHandler(async (req, res, next) => {
    }
 });
 
+const changeTaskPhase = asyncHandler(async (req, res, next) => {
+   try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const taskId = req?.params?.taskId;
+
+      const { state } = req?.body;
+
+      if (!state) {
+         throw new ApiError(400, "State is mandatory");
+      }
+
+      if (!taskId) {
+         throw new ApiError(400, "Task ID is mandatory");
+      }
+
+      const task = await Task.findById(taskId);
+
+      if (!task) {
+         throw new ApiError(404, "Task doesn't exists");
+      }
+
+      await Task.findByIdAndUpdate(taskId, { $set: { state } }, { new: true });
+
+      const updatedTask = await Task.findById(taskId);
+
+      return res
+         .status(200)
+         .json(
+            new ApiResponse(200, { task: updatedTask }, "Task state updated")
+         );
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
 const getTasksCreatedToday = async (req, res) => {
    try {
       const userId = req?.user?._id;
@@ -261,7 +308,7 @@ const getTasksCreatedToday = async (req, res) => {
          },
          {
             $match: {
-               createdAt: {
+               updatedAt: {
                   $gte: today,
                },
             },
@@ -376,7 +423,7 @@ const getFormattedTasksThisWeek = async (req, res) => {
          },
          {
             $match: {
-               createdAt: {
+               updatedAt: {
                   $gte: startOfWeek,
                   $lte: endOfWeek,
                },
@@ -500,7 +547,7 @@ const getTasksCreatedThisMonth = async (req, res) => {
          },
          {
             $match: {
-               createdAt: {
+               updatedAt: {
                   $gte: startOfMonth,
                   $lte: endOfMonth,
                },
@@ -600,6 +647,7 @@ export {
    deleteTask,
    updateTask,
    updateChecklist,
+   changeTaskPhase,
    getTasksCreatedToday,
    getFormattedTasksThisWeek,
    getTasksCreatedThisMonth,

@@ -98,4 +98,36 @@ const updateChecklist = async (taskUpdatedData, accessToken) => {
   }
 };
 
-export { getFormattedTasks, createTask, updateChecklist };
+const updateTaskPhase = async (taskToUpdateWithPhase, accessToken) => {
+  try {
+    const response = await axios.patch(
+      `${taskCommonRoute}/update-task-state/${taskToUpdateWithPhase.taskId}`,
+      { state: taskToUpdateWithPhase.state },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const { success, statusCode, data } = response.data;
+
+    if (success && statusCode === 200) {
+      return { success: true, msg: "Task updated", task: data?.task };
+    }
+    return { success: false, msg: "Something went wrong" };
+  } catch (error) {
+    console.log(error);
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      return { success: false, msg: "Unauthorized request" };
+    } else if (status === 400) {
+      return { success: false, msg: "Task ID is mandatory" };
+    } else if (status === 404) {
+      return { success: false, msg: "Task doesn't exists" };
+    }
+    return { success: false, msg: "Something went wrong" };
+  }
+};
+
+export { getFormattedTasks, createTask, updateChecklist, updateTaskPhase };
