@@ -4,6 +4,7 @@ import {
    changeTaskPhase,
    createTask,
    deleteTask,
+   deleteTaskById,
    getAllAnalytics,
    getFormattedTasksThisWeek,
    getTaskWithId,
@@ -28,5 +29,7 @@ router.route("/get-formatted-tasks").get(verifyJWT, getFormattedTasksThisWeek);
 router.route("/get-task/:taskId").get(getTaskWithId);
 
 router.route("/anaytics").get(verifyJWT, getAllAnalytics);
+
+router.route("/delete/:taskId").delete(verifyJWT, deleteTaskById);
 
 export default router;

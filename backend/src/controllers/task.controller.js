@@ -804,6 +804,52 @@ const getAllAnalytics = asyncHandler(async (req, res, next) => {
    }
 });
 
+const deleteTaskById = asyncHandler(async (req, res, next) => {
+   try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized user");
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "User couldn't be found");
+      }
+
+      const { taskId } = req?.params;
+
+      if (!taskId) {
+         throw new ApiError(400, "Task ID is mandatory");
+      }
+
+      const task = await Task.findById(taskId);
+
+      if (!task) {
+         throw new ApiError(404, "Task doesn't exists");
+      }
+
+      await Task.findByIdAndDelete(taskId);
+
+      const isTaskDeleted = await Task.findById(taskId);
+
+      if (isTaskDeleted) {
+         throw new ApiError(
+            405,
+            "Something went wrong while deleting the task"
+         );
+      }
+
+      return res.status(200).json(new ApiResponse(200, [], "Task deleted"));
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
 export {
    createTask,
    deleteTask,
@@ -815,4 +861,5 @@ export {
    getTasksCreatedThisMonth,
    getTaskWithId,
    getAllAnalytics,
+   deleteTaskById,
 };

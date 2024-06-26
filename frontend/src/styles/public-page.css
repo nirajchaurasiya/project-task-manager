@@ -76,3 +76,20 @@
 .loader-container {
   margin-top: 20vh;
 }
+
+.public-task-not-found-error {
+  height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.public-task-not-found-error p {
+  font-size: 25px;
+  font-weight: 700;
+}
+@media (max-width: 450px) {
+  .public-task-not-found-error p {
+    font-size: 18px;
+    font-weight: 600;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "../styles/public-page.css";
 import { ToastContext } from "../context/ToastContext";
 import { toast } from "react-toastify";
@@ -25,6 +25,7 @@ export default function PublicPage() {
   const handleInputCheck = () => {
     displayToast("Public page, Read only", false);
   };
+  const useEffectExecuted = useRef(false);
 
   useEffect(() => {
     const getTask = async () => {
@@ -39,7 +40,10 @@ export default function PublicPage() {
       }
       setLoader(false);
     };
-    getTask();
+    if (!useEffectExecuted.current) {
+      getTask();
+      useEffectExecuted.current = true; // Set to true after first execution
+    }
   }, []);
 
   return (
@@ -96,7 +100,7 @@ export default function PublicPage() {
         <div className="loader-container">
           <Spinner />
         </div>
-      ) : (
+      ) : task ? (
         <div className="public-task-container">
           <div className="public-task-mid-container">
             <div className="todo-list-container">
@@ -152,6 +156,10 @@ export default function PublicPage() {
               )}
             </div>
           </div>
+        </div>
+      ) : (
+        <div className="public-task-not-found-error">
+          <p>OOPS! TASK COULDN'T BE FOUND!</p>
         </div>
       )}
     </div>

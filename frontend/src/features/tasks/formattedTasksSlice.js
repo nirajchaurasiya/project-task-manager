@@ -69,10 +69,10 @@ export const formattedTasksSlice = createSlice({
         state: updatedTask.state,
       });
     },
-    addSingleTask: (state, action) => {
-      const newTask = action.payload;
-      state.formattedTasks[newTask.state].push(newTask);
-    },
+    // addSingleTask: (state, action) => {
+    //   const newTask = action.payload;
+    //   state.formattedTasks[newTask.state].push(newTask);
+    // },
 
     addSingleTask: (state, action) => {
       // Logic to add a single task to the appropriate state array
@@ -94,6 +94,17 @@ export const formattedTasksSlice = createSlice({
           break;
       }
     },
+
+    removeSingleTaskById: (state, action) => {
+      const taskState = action.payload.state;
+      const taskId = action.payload.taskId;
+
+      if (state.formattedTasks[taskState]) {
+        state.formattedTasks[taskState] = state.formattedTasks[
+          taskState
+        ].filter((e) => e._id !== taskId);
+      }
+    },
   },
 });
 
@@ -102,6 +113,7 @@ export const {
   addSingleTask,
   updateCheckListInStore,
   updateTaskState,
+  removeSingleTaskById,
 } = formattedTasksSlice.actions;
 
 export default formattedTasksSlice.reducer;

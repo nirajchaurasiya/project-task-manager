@@ -3,16 +3,22 @@ import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { formatDueDate } from "../utils/formatDate";
 import { taskPhase } from "../utils/tasksPhases";
-import { updateChecklist, updateTaskPhase } from "../apis/tasks";
+import {
+  deleteTaskWithId,
+  updateChecklist,
+  updateTaskPhase,
+} from "../apis/tasks";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContext } from "../context/ToastContext";
 import { toast } from "react-toastify";
 import {
+  removeSingleTaskById,
   updateCheckListInStore,
   updateTaskState,
 } from "../features/tasks/formattedTasksSlice";
 
 export default function TodoCard({ globalToggle, task }) {
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showCheckListToggle, setShowCheckListToggle] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
   const [checkedCount, setCheckedCount] = useState(0);
@@ -142,6 +148,17 @@ export default function TodoCard({ globalToggle, task }) {
       });
   };
 
+  const handleDeleteTask = async () => {
+    const response = await deleteTaskWithId(task._id, accessToken);
+
+    const { msg, success } = response;
+
+    if (success) {
+      dispatch(removeSingleTaskById({ taskId: task?._id, state: task?.state }));
+    }
+    displayToast(msg, success);
+  };
+
   return (
     <div
       className="todo-list-container"
@@ -175,7 +192,13 @@ export default function TodoCard({ globalToggle, task }) {
           >
             <p>Edit</p>
             <p onClick={handleShareButtonTask}>Share</p>
-            <p>Delete</p>
+            <p
+              onClick={() => {
+                setShowDeleteAlert(!showDeleteAlert);
+              }}
+            >
+              Delete
+            </p>
           </div>
         )}
       </div>
@@ -234,6 +257,33 @@ export default function TodoCard({ globalToggle, task }) {
             ))}
         </div>
       </div>
+      {showDeleteAlert && (
+        <div
+          className="overflow-container"
+          onClick={() => {
+            setShowDeleteAlert(!showDeleteAlert);
+          }}
+        >
+          <div className="overflow-mid-container">
+            <div
+              className="main-content"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <p>Are you sure you want to, delete?</p>
+              <button onClick={handleDeleteTask}>Yes, Delete</button>
+              <button
+                onClick={() => {
+                  setShowDeleteAlert(!showDeleteAlert);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
