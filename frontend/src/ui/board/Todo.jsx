@@ -179,6 +179,7 @@ export default function Todo() {
         dispatch(addSingleTask(task));
       }
       displayToast(msg, success);
+      setShowTodo(false);
     }
   };
 
