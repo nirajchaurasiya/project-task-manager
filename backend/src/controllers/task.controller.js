@@ -667,6 +667,143 @@ const getTaskWithId = asyncHandler(async (req, res, next) => {
    }
 });
 
+const getAllAnalytics = asyncHandler(async (req, res, next) => {
+   try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const allStates = ["backlog", "todo", "inprogress", "done"];
+      const allPriorities = ["low", "moderate", "high"];
+
+      const analytics = await Task.aggregate([
+         {
+            $match: {
+               owner: userId,
+            },
+         },
+         {
+            $facet: {
+               stateCounts: [
+                  { $group: { _id: "$state", count: { $sum: 1 } } },
+                  { $project: { _id: 0, state: "$_id", count: 1 } },
+               ],
+               priorityCounts: [
+                  { $group: { _id: "$priority", count: { $sum: 1 } } },
+                  { $project: { _id: 0, priority: "$_id", count: 1 } },
+               ],
+               dueDateCounts: [
+                  {
+                     $match: {
+                        dueDate: { $ne: "" },
+                     },
+                  },
+                  {
+                     $count: "count",
+                  },
+               ],
+            },
+         },
+         {
+            $project: {
+               stateCounts: {
+                  $map: {
+                     input: allStates,
+                     as: "state",
+                     in: {
+                        state: "$$state",
+                        count: {
+                           $ifNull: [
+                              {
+                                 $arrayElemAt: [
+                                    {
+                                       $filter: {
+                                          input: "$stateCounts",
+                                          as: "sc",
+                                          cond: {
+                                             $eq: ["$$sc.state", "$$state"],
+                                          },
+                                       },
+                                    },
+                                    0,
+                                 ],
+                              },
+                              { count: 0 },
+                           ],
+                        },
+                     },
+                  },
+               },
+               priorityCounts: {
+                  $map: {
+                     input: allPriorities,
+                     as: "priority",
+                     in: {
+                        priority: "$$priority",
+                        count: {
+                           $ifNull: [
+                              {
+                                 $arrayElemAt: [
+                                    {
+                                       $filter: {
+                                          input: "$priorityCounts",
+                                          as: "pc",
+                                          cond: {
+                                             $eq: [
+                                                "$$pc.priority",
+                                                "$$priority",
+                                             ],
+                                          },
+                                       },
+                                    },
+                                    0,
+                                 ],
+                              },
+                              { count: 0 },
+                           ],
+                        },
+                     },
+                  },
+               },
+               dueDateCounts: {
+                  $arrayElemAt: ["$dueDateCounts.count", 0],
+               },
+            },
+         },
+      ]);
+
+      // Extracting the numbers only
+      const stateCounts = analytics[0].stateCounts.reduce((acc, curr) => {
+         acc[curr.state] = curr.count.count;
+         return acc;
+      }, {});
+
+      const priorityCounts = analytics[0].priorityCounts.reduce((acc, curr) => {
+         acc[curr.priority] = curr.count.count;
+         return acc;
+      }, {});
+
+      const dueDateCounts = analytics[0].dueDateCounts;
+
+      const result = {
+         stateCounts,
+         priorityCounts,
+         dueDateCounts,
+      };
+
+      return res
+         .status(200)
+         .json(new ApiResponse(200, result, "Analytics data fetched"));
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
 export {
    createTask,
    deleteTask,
@@ -677,4 +814,5 @@ export {
    getFormattedTasksThisWeek,
    getTasksCreatedThisMonth,
    getTaskWithId,
+   getAllAnalytics,
 };

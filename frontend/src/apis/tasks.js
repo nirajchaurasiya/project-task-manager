@@ -153,10 +153,40 @@ const getTaskWithId = async (taskId) => {
   }
 };
 
+const getAllAnalyticsData = async (accessToken) => {
+  try {
+    const response = await axios.get(`${taskCommonRoute}/anaytics`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const { success, statusCode, data } = response.data;
+
+    if (success && statusCode === 200) {
+      return {
+        success: true,
+        msg: "Analytics fetched",
+        fetchedAnalyticsData: data,
+      };
+    }
+    return { success: false, msg: "Something went wrong" };
+  } catch (error) {
+    console.log(error);
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      return { success: false, msg: "Unauthrorized request" };
+    }
+    return { success: false, msg: "Something went wrong" };
+  }
+};
+
 export {
   getFormattedTasks,
   createTask,
   updateChecklist,
   updateTaskPhase,
   getTaskWithId,
+  getAllAnalyticsData,
 };
