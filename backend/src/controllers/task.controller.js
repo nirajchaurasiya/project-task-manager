@@ -642,6 +642,31 @@ const getTasksCreatedThisMonth = async (req, res) => {
    }
 };
 
+const getTaskWithId = asyncHandler(async (req, res, next) => {
+   try {
+      const { taskId } = req?.params;
+
+      if (!taskId) {
+         throw new ApiError(400, "TaskId is mandatory");
+      }
+
+      const task = await Task.findById(taskId);
+
+      if (!task) {
+         throw new ApiError(404, "Task couldn't be found");
+      }
+
+      return res
+         .status(200)
+         .json(new ApiResponse(200, { task }, "Task fetched"));
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
 export {
    createTask,
    deleteTask,
@@ -651,4 +676,5 @@ export {
    getTasksCreatedToday,
    getFormattedTasksThisWeek,
    getTasksCreatedThisMonth,
+   getTaskWithId,
 };

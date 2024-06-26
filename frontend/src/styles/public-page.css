@@ -1,0 +1,78 @@
+.public-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  padding: 20px;
+}
+.public-page-heading svg {
+  width: 25px;
+}
+
+.public-page-heading p {
+  font-size: 19px;
+  font-weight: 700;
+}
+.public-task-container {
+  display: flex;
+  justify-content: center;
+}
+.public-task-mid-container {
+  border: 2px solid rgb(237, 245, 254);
+  border-radius: 15px;
+  padding: 1rem;
+  width: 40%;
+}
+@media (max-width: 1150px) {
+  .public-task-mid-container {
+    border: 2px solid rgb(237, 245, 254);
+    border-radius: 15px;
+    padding: 1rem;
+    width: 70%;
+  }
+}
+@media (max-width: 700px) {
+  .public-task-mid-container {
+    border: 2px solid rgb(237, 245, 254);
+    border-radius: 15px;
+    padding: 1rem;
+    width: 99%;
+  }
+}
+.all-important-details div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.public-page-container .title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0.8rem 0px 2rem;
+}
+.public-page-container .checklist-tasks {
+  max-height: 450px;
+  overflow-y: scroll;
+}
+.all-important-details .due-date-public {
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.all-important-details button {
+  background-color: var(--error-red);
+  color: rgb(255, 255, 255);
+  font-family: Inter;
+  padding: 0.5rem 1.3rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 0;
+  outline: 0;
+}
+.loader-container {
+  margin-top: 20vh;
+}

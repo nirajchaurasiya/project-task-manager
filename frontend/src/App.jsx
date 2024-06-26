@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { loginUserWithToken } from "./apis/auth";
 import HomeLoader from "./components/HomeLoader";
 import { saveAccessToken } from "./features/accessToken/accessTokenSlice";
+import PublicPage from "./components/PublicPage";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -93,6 +94,8 @@ export default function App() {
               </Layout>
             }
           />
+          <Route path="/share/:taskId" element={<PublicPage />} />
+          <Route path="*" element={<p>404</p>} />
         </Routes>
       </BrowserRouter>
     </main>

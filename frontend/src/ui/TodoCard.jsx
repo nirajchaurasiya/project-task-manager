@@ -16,6 +16,7 @@ export default function TodoCard({ globalToggle, task }) {
   const [showCheckListToggle, setShowCheckListToggle] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
   const [checkedCount, setCheckedCount] = useState(0);
+  const [optionsToggle, setOptionsToggle] = useState(false);
 
   useEffect(() => {
     const initialCheckedItems = {};
@@ -126,10 +127,34 @@ export default function TodoCard({ globalToggle, task }) {
       JSON.stringify(Array.from(expandedCheckList))
     );
   };
+  const handleShareButtonTask = () => {
+    const mainUrl = new URL(window.location.href);
+    const shareUrl = `${mainUrl.origin}/share/${task._id}`;
+
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        displayToast("Share link copied", true);
+      })
+      .catch((error) => {
+        displayToast("Failed to copy share link", false);
+        console.error("Clipboard write failed:", error);
+      });
+  };
 
   return (
-    <div className="todo-list-container">
-      <div className="todo-list-container-header">
+    <div
+      className="todo-list-container"
+      onClick={() => {
+        setOptionsToggle(false);
+      }}
+    >
+      <div
+        className="todo-list-container-header"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <div className="left-text">
           {task?.priority === "low" && <div className="alert-circle low"></div>}
           {task?.priority === "moderate" && (
@@ -140,7 +165,19 @@ export default function TodoCard({ globalToggle, task }) {
           )}
           <p>{task?.priority} PRIORITY</p>
         </div>
-        <BiDotsHorizontalRounded />
+        <BiDotsHorizontalRounded
+          onClick={() => setOptionsToggle(!optionsToggle)}
+        />
+        {optionsToggle && (
+          <div
+            className="menu-container"
+            onClick={() => setOptionsToggle(!optionsToggle)}
+          >
+            <p>Edit</p>
+            <p onClick={handleShareButtonTask}>Share</p>
+            <p>Delete</p>
+          </div>
+        )}
       </div>
       <p className="title">{task?.title}</p>
       <div className="check-list-container">

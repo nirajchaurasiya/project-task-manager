@@ -157,7 +157,7 @@
   cursor: pointer;
   font-weight: 500;
   margin-bottom: 1.8rem;
-  width: 60%;
+  width: 100%;
 }
 
 .check-list-container {
@@ -228,4 +228,47 @@
 }
 .justify-end {
   justify-content: flex-end;
+}
+.menu-container {
+  position: fixed;
+  width: 150px;
+  background-color: rgb(255, 255, 255);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 0.4rem 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 170px;
+  margin-left: 180px;
+}
+.menu-container p {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease 0s;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+}
+.menu-container p:last-child {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease 0s;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  color: var(--error-red);
+}
+.menu-container p:hover {
+  background-color: rgb(225, 225, 225);
 }

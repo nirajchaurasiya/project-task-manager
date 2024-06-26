@@ -130,4 +130,33 @@ const updateTaskPhase = async (taskToUpdateWithPhase, accessToken) => {
   }
 };
 
-export { getFormattedTasks, createTask, updateChecklist, updateTaskPhase };
+const getTaskWithId = async (taskId) => {
+  try {
+    const response = await axios.get(`${taskCommonRoute}/get-task/${taskId}`);
+
+    const { success, statusCode, data } = response.data;
+
+    if (success && statusCode === 200) {
+      return { success: true, msg: "Task fetched", fetchedTask: data.task };
+    }
+    return { success: false, msg: "Something went wrong" };
+  } catch (error) {
+    console.log(error);
+    const status = error?.response?.status;
+
+    if (status === 400) {
+      return { success: false, msg: "Task ID is mandatory" };
+    } else if (status === 404) {
+      return { success: false, msg: "Task doesn't exists" };
+    }
+    return { success: false, msg: "Something went wrong" };
+  }
+};
+
+export {
+  getFormattedTasks,
+  createTask,
+  updateChecklist,
+  updateTaskPhase,
+  getTaskWithId,
+};
