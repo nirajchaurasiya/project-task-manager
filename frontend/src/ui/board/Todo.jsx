@@ -16,7 +16,7 @@ export default function Todo() {
   const [showTodo, setShowTodo] = useState(false);
   const [showAssignPeople, setShowAssignPeople] = useState(false);
   const [checklistItems, setChecklistItems] = useState([]);
-  const [assignee, setAssignee] = useState("Add an assignee");
+  const [assignee, setAssignee] = useState("");
   const [startDate, setStartDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hasUserClickedOnDateBtn, setHasUserClickedOnDateBtn] = useState(false);
@@ -32,7 +32,7 @@ export default function Todo() {
     setGlobalToggle(!globalToggle);
   };
   const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
-  console.log(tasks);
+  // console.log(tasks);
   const setToastText = useContext(ToastContext);
   const displayToast = (text, success) => {
     if (success) {
@@ -159,8 +159,13 @@ export default function Todo() {
     }
 
     if (valid) {
-      console.log(title, selectedPriority, checklistItems);
-      console.log(startDate, assignee);
+      // console.log({
+      //   title,
+      //   priority: selectedPriority,
+      //   checklist: checklistItems,
+      //   dueDate: startDate && hasUserClickedOnDateBtn ? startDate : "",
+      //   assignedTo: assignee,
+      // });
       const response = await createTask(accessToken, {
         title,
         priority: selectedPriority,
@@ -287,7 +292,7 @@ export default function Todo() {
                           setShowAssignPeople(!showAssignPeople);
                         }}
                       >
-                        <p>{assignee}</p>
+                        <p>{assignee ? assignee : "Add an assignee"}</p>
                         <p>
                           <MdKeyboardArrowDown />
                         </p>

@@ -9,7 +9,7 @@ export default function Done() {
     setGlobalToggle(!globalToggle);
   };
   const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
-  console.log(tasks);
+  // console.log(tasks);
   return (
     <>
       <div className="card-header">

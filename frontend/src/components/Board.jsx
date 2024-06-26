@@ -54,11 +54,11 @@ export default function Board() {
       valid = false;
     }
     setErrors({ email: emailError });
-    console.log(valid);
+    // console.log(valid);
     if (valid) {
       const response = await addAssignee(email, accessToken);
       const { success, newAssignee, msg } = response;
-      console.log(newAssignee, msg);
+      // console.log(newAssignee, msg);
       if (success) {
         dispatch(addAssigneeToRedux(newAssignee));
         displayToast(msg, success);
@@ -86,8 +86,8 @@ export default function Board() {
   const useEffectExecuted = useRef(false);
 
   useEffect(() => {
-    console.log("Effect triggered");
-    console.log("AccessToken:", accessToken);
+    // console.log("Effect triggered");
+    // console.log("AccessToken:", accessToken);
 
     const getTasks = async () => {
       try {
@@ -96,15 +96,15 @@ export default function Board() {
         const { success, formattedTasks, msg } = response;
 
         if (success) {
-          console.log("success", formattedTasks);
+          // console.log("success", formattedTasks);
           dispatch(saveFormattedTasks(formattedTasks));
         } else {
-          console.log("error");
+          // console.log("error");
         }
 
         displayToast(msg, success);
       } catch (error) {
-        console.error("Error fetching tasks:", error);
+        // console.error("Error fetching tasks:", error);
         displayToast("Error fetching tasks", false);
       }
       // setTimeout(() => {

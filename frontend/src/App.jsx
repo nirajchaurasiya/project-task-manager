@@ -38,6 +38,13 @@ export default function App() {
     fetchUser();
   }, [dispatch]);
 
+  useEffect(() => {
+    const expandedCheckList = localStorage.getItem("expandedCheckList");
+    if (!expandedCheckList) {
+      localStorage.setItem("expandedCheckList", JSON.stringify([])); // Convert empty array to JSON string
+    }
+  }, []);
+
   if (loader) {
     return <HomeLoader />;
   }

@@ -4,6 +4,7 @@ import {
    createTask,
    deleteTask,
    getFormattedTasksThisWeek,
+   updateChecklist,
    updateTask,
 } from "../controllers/task.controller.js";
 
@@ -14,6 +15,8 @@ router.route("/create").post(verifyJWT, createTask);
 router.route("/delete/:taskId").delete(verifyJWT, deleteTask);
 
 router.route("/update/:taskId").patch(verifyJWT, updateTask);
+
+router.route("/update-checklist/:taskId").patch(verifyJWT, updateChecklist);
 
 router.route("/get-formatted-tasks").get(verifyJWT, getFormattedTasksThisWeek);
 

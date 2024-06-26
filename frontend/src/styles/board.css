@@ -134,7 +134,16 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
+}
+
+.low {
+  background: #63c05b;
+}
+.high {
   background-color: var(--accent-pink);
+}
+.moderate {
+  background: #18b0ff;
 }
 .todo-list-container-header svg {
   cursor: pointer;
@@ -216,4 +225,7 @@
   border-radius: 6px;
   border: transparent;
   cursor: pointer;
+}
+.justify-end {
+  justify-content: flex-end;
 }

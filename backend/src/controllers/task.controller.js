@@ -19,7 +19,7 @@ const createTask = asyncHandler(async (req, res, next) => {
       }
 
       const { title, priority, checklist, dueDate, assignedTo } = req?.body;
-
+      console.log(title, priority, checklist, dueDate, assignedTo);
       if (!title || !priority || checklist?.length < 1) {
          throw new ApiError(400, "All fields are mandatory");
       }
@@ -143,8 +143,8 @@ const updateTask = asyncHandler(async (req, res, next) => {
          task.dueDate = dueDate;
       }
 
-      if (checkList.length > 0) {
-         task.checkList = checkList;
+      if (checkList?.length > 0) {
+         task.checklist = checkList;
       }
 
       if (assignedTo) {
@@ -174,12 +174,91 @@ const updateTask = asyncHandler(async (req, res, next) => {
    }
 });
 
+const updateChecklist = asyncHandler(async (req, res, next) => {
+   try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "Unauthorized request");
+      }
+
+      const taskId = req?.params?.taskId;
+
+      if (!taskId) {
+         throw new ApiError(400, "Task ID is mandatory");
+      }
+
+      // Update checklist items based on request body
+      const { changedItems } = req.body;
+
+      if (!Array.isArray(changedItems)) {
+         throw new ApiError(
+            400,
+            "Invalid request body: changedItems should be an array"
+         );
+      }
+
+      // Construct update object for findByIdAndUpdate
+      const updateObj = {};
+      changedItems.forEach(({ itemId, isChecked }) => {
+         updateObj[`checklist.$[elem${itemId}].isChecked`] = isChecked;
+      });
+
+      const options = {
+         arrayFilters: changedItems.map(({ itemId }) => ({
+            [`elem${itemId}._id`]: itemId,
+         })),
+         new: true,
+      };
+
+      // Update the task using findByIdAndUpdate
+      const updatedTask = await Task.findByIdAndUpdate(
+         taskId,
+         updateObj,
+         options
+      );
+
+      if (!updatedTask) {
+         throw new ApiError(404, "Task not found or could not be updated");
+      }
+
+      const populatedTask = await Task.findById(taskId);
+
+      return res
+         .status(200)
+         .json(
+            new ApiResponse(200, { task: populatedTask }, "Checklist updated")
+         );
+   } catch (error) {
+      if (error instanceof ApiError) {
+         return next(error);
+      }
+      next(new ApiError(500, "Something went wrong"));
+   }
+});
+
 const getTasksCreatedToday = async (req, res) => {
    try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized user");
+      }
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       const tasks = await Task.aggregate([
+         {
+            $match: {
+               owner: userId,
+            },
+         },
          {
             $match: {
                createdAt: {
@@ -278,15 +357,23 @@ const getTasksCreatedToday = async (req, res) => {
 
 const getFormattedTasksThisWeek = async (req, res) => {
    try {
+      const userId = req?.user?._id;
+      if (!userId) {
+         throw new ApiError(401, "Unatuhorized user");
+      }
       const startOfWeek = new Date();
-      startOfWeek.setHours(0, 0, 0, 0);
       startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-
+      startOfWeek.setHours(0, 0, 0, 0);
       const endOfWeek = new Date();
       endOfWeek.setHours(23, 59, 59, 999);
       endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
 
       const tasks = await Task.aggregate([
+         {
+            $match: {
+               owner: userId,
+            },
+         },
          {
             $match: {
                createdAt: {
@@ -336,7 +423,7 @@ const getFormattedTasksThisWeek = async (req, res) => {
                            as: "item",
                            in: {
                               title: "$$item.title",
-                              done: "$$item.isCompleted",
+                              isChecked: "$$item.isChecked",
                               _id: "$$item._id",
                            },
                         },
@@ -391,6 +478,12 @@ const getFormattedTasksThisWeek = async (req, res) => {
 
 const getTasksCreatedThisMonth = async (req, res) => {
    try {
+      const userId = req?.user?._id;
+
+      if (!userId) {
+         throw new ApiError(401, "Unauthorized user");
+      }
+
       const startOfMonth = new Date();
       startOfMonth.setHours(0, 0, 0, 0);
       startOfMonth.setDate(1); // Set to the first day of the current month
@@ -400,6 +493,11 @@ const getTasksCreatedThisMonth = async (req, res) => {
       endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0); // Set to the last day of the current month
 
       const tasks = await Task.aggregate([
+         {
+            $match: {
+               owner: userId,
+            },
+         },
          {
             $match: {
                createdAt: {
@@ -501,6 +599,7 @@ export {
    createTask,
    deleteTask,
    updateTask,
+   updateChecklist,
    getTasksCreatedToday,
    getFormattedTasksThisWeek,
    getTasksCreatedThisMonth,
