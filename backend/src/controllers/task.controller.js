@@ -343,7 +343,7 @@ const getTasksCreatedToday = async (req, res, next) => {
                _id: "$state",
                tasks: {
                   $push: {
-                     id: "$_id",
+                     _id: "$_id",
                      title: "$title",
                      checklist: {
                         $map: {

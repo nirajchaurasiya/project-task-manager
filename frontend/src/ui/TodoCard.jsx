@@ -32,7 +32,7 @@ export default function TodoCard({ globalToggle, task }) {
   const { tempSingleTaskData, setTempSingleTaskData } =
     useContext(TempSingleTask);
   const { showEditTaskBox, setShowEditTaskBox } = useContext(EditTaskContext);
-
+  console.log(task);
   useEffect(() => {
     const initialCheckedItems = {};
     let initialCount = 0;
@@ -77,6 +77,9 @@ export default function TodoCard({ globalToggle, task }) {
       state: phase,
       taskId: task._id,
     };
+
+    console.log(task?._id);
+
     const response = await updateTaskPhase(taskToUpdateWithPhase, accessToken);
 
     const { success, msg } = response;
