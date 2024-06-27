@@ -445,6 +445,7 @@
 .action-buttons {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
 }
 
 .action-buttons .due-button {

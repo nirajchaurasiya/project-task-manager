@@ -95,6 +95,7 @@ export default function Todo() {
   };
 
   const titleRef = useRef();
+  const checklistContainerRef = useRef(null);
 
   useEffect(() => {
     if (tempSingleTaskData) {
@@ -233,6 +234,18 @@ export default function Todo() {
     }
     setErrors((prevErrors) => ({ ...prevErrors, titleError: titleError }));
   };
+
+  useEffect(() => {
+    // Function to scroll to the bottom of the checklist container
+    const scrollToBottom = () => {
+      if (checklistContainerRef.current) {
+        checklistContainerRef.current.scrollTop =
+          checklistContainerRef.current.scrollHeight;
+      }
+    };
+
+    scrollToBottom(); // Call the scroll function initially and whenever checklistItems change
+  }, [checklistItems]);
 
   return (
     <>
@@ -375,7 +388,10 @@ export default function Todo() {
                   )}
                 </div>
 
-                <div className="all-checklist-field-container">
+                <div
+                  className="all-checklist-field-container"
+                  ref={checklistContainerRef}
+                >
                   {checklistItems.map((item, index) => (
                     <div key={index} className="checklists-field">
                       <div className="select-checklist">
