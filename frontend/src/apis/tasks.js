@@ -215,6 +215,84 @@ const deleteTaskWithId = async (taskId, accessToken) => {
   }
 };
 
+const getFormattedTasksThisMonth = async (accessToken) => {
+  try {
+    const response = await axios.get(
+      `${taskCommonRoute}/get-formatted-tasks-this-month`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const { success, statusCode, data } = response.data;
+    // console.log(response.data);
+    if ((success, statusCode === 200)) {
+      return {
+        success: true,
+        msg: "Tasks retrieved",
+        formattedTasks: data.formattedTasks,
+      };
+    } else {
+      return {
+        success: false,
+        msg: "Something went wrong while retrieving the data",
+      };
+    }
+  } catch (error) {
+    console.log(error);
+
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      return { success: false, msg: "Unauthorized access" };
+    }
+    return {
+      success: false,
+      msg: "Something went wrong while retrieving the data",
+    };
+  }
+};
+
+const getFormattedTasksToday = async (accessToken) => {
+  try {
+    const response = await axios.get(
+      `${taskCommonRoute}/get-formatted-tasks-this-day`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const { success, statusCode, data } = response.data;
+    // console.log(response.data);
+    if (success && statusCode === 200) {
+      return {
+        success: true,
+        msg: "Tasks retrieved",
+        formattedTasks: data.formattedTasks,
+      };
+    } else {
+      return {
+        success: false,
+        msg: "Something went wrong while retrieving the data",
+      };
+    }
+  } catch (error) {
+    console.log(error);
+
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      return { success: false, msg: "Unauthorized access" };
+    }
+    return {
+      success: false,
+      msg: "Something went wrong while retrieving the data",
+    };
+  }
+};
+
 export {
   getFormattedTasks,
   createTask,
@@ -222,5 +300,7 @@ export {
   updateTaskPhase,
   getTaskWithId,
   getAllAnalyticsData,
+  getFormattedTasksToday,
   deleteTaskWithId,
+  getFormattedTasksThisMonth,
 };

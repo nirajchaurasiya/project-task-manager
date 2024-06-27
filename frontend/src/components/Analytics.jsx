@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { HiOutlineMail } from "react-icons/hi";
 import { CiLock } from "react-icons/ci";
 import { CgEye } from "react-icons/cg";
@@ -23,7 +23,7 @@ export default function Analytics() {
       toast.error(text);
     }
   };
-
+  const useEffectExecuted = useRef();
   useEffect(() => {
     const getAnalytics = async () => {
       setLoader(true);
@@ -37,7 +37,10 @@ export default function Analytics() {
       displayToast(msg, success);
       setLoader(false);
     };
-    getAnalytics();
+    if (!useEffectExecuted.current) {
+      getAnalytics();
+      useEffectExecuted.current = true;
+    }
   }, []);
   return (
     <div className="analytics-container">
@@ -54,28 +57,28 @@ export default function Analytics() {
                 <div className="blue-dot"></div>
                 <p>Backlog Tasks</p>
               </div>
-              <span>{analytics?.stateCounts?.backlog}</span>
+              <span>{analytics?.stateCounts?.backlog || "0"}</span>
             </div>
             <div className="analytics-card-option">
               <div className="analytics-card-option-header">
                 <div className="blue-dot"></div>
                 <p>To-do Tasks</p>
               </div>
-              <span>{analytics?.stateCounts?.todo}</span>
+              <span>{analytics?.stateCounts?.todo || "0"}</span>
             </div>
             <div className="analytics-card-option">
               <div className="analytics-card-option-header">
                 <div className="blue-dot"></div>
                 <p>In-Progress Tasks</p>
               </div>
-              <span>{analytics?.stateCounts?.inprogress}</span>
+              <span>{analytics?.stateCounts?.inprogress || "0"}</span>
             </div>
             <div className="analytics-card-option">
               <div className="analytics-card-option-header">
                 <div className="blue-dot"></div>
                 <p>Completed Tasks</p>
               </div>
-              <span>{analytics?.stateCounts?.done}</span>
+              <span>{analytics?.stateCounts?.done || "0"}</span>
             </div>
           </div>
           <div className="analytics-card">
@@ -84,28 +87,28 @@ export default function Analytics() {
                 <div className="blue-dot"></div>
                 <p>Low Priority</p>
               </div>
-              <span>{analytics?.priorityCounts?.low}</span>
+              <span>{analytics?.priorityCounts?.low || "0"}</span>
             </div>
             <div className="analytics-card-option">
               <div className="analytics-card-option-header">
                 <div className="blue-dot"></div>
                 <p>High Priority</p>
               </div>
-              <span>{analytics?.priorityCounts?.high}</span>
+              <span>{analytics?.priorityCounts?.high || "0"}</span>
             </div>
             <div className="analytics-card-option">
               <div className="analytics-card-option-header">
                 <div className="blue-dot"></div>
                 <p>Moderate Priority</p>
               </div>
-              <span>{analytics?.priorityCounts?.moderate}</span>
+              <span>{analytics?.priorityCounts?.moderate || "0"}</span>
             </div>
             <div className="analytics-card-option">
               <div className="analytics-card-option-header">
                 <div className="blue-dot"></div>
                 <p>Due Date Tasks</p>
               </div>
-              <span>{analytics?.dueDateCounts}</span>
+              <span>{analytics?.dueDateCounts || "0"}</span>
             </div>
           </div>
         </div>

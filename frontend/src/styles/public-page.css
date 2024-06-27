@@ -93,3 +93,7 @@
     font-weight: 600;
   }
 }
+.due-date-missed {
+  background-color: var(--error-red);
+  color: white;
+}

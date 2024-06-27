@@ -12,12 +12,17 @@ import { ToastContext } from "../context/ToastContext";
 import { useNavigate } from "react-router-dom";
 import { addAssigneeToRedux } from "../features/auth/authSlice";
 import { toast } from "react-toastify";
-import { getFormattedTasks } from "../apis/tasks";
+import {
+  getFormattedTasks,
+  getFormattedTasksThisMonth,
+  getFormattedTasksToday,
+} from "../apis/tasks";
 import Spinner from "./Spinner";
 import { saveFormattedTasks } from "../features/tasks/formattedTasksSlice";
 export default function Board() {
   const [showPeople, setShowPeople] = useState(false);
   const [addedAlert, setAddedAlert] = useState(false);
+  const [timeframe, setTimeframe] = useState("0");
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState({ email: "" });
@@ -85,6 +90,34 @@ export default function Board() {
 
   const useEffectExecuted = useRef(false);
 
+  const fetchTasks = async (timeframe) => {
+    let response;
+    switch (timeframe) {
+      case "1":
+        response = await getFormattedTasksToday(accessToken);
+        break;
+      case "2":
+        response = await getFormattedTasksThisMonth(accessToken);
+        break;
+      // Default means "0"
+      default:
+        response = await getFormattedTasks(accessToken);
+        break;
+    }
+    console.log(timeframe);
+    console.log(response);
+    const { success, formattedTasks, msg } = response;
+
+    if (success) {
+      displayToast(msg, success);
+      console.log("success", formattedTasks);
+      dispatch(saveFormattedTasks(formattedTasks));
+    } else {
+      displayToast(msg, success);
+      console.log("error");
+    }
+  };
+
   useEffect(() => {
     // console.log("Effect triggered");
     // console.log("AccessToken:", accessToken);
@@ -112,12 +145,18 @@ export default function Board() {
       // }, 1000);
     };
 
-    // Check if useEffect has already run
     if (!useEffectExecuted.current) {
       getTasks();
-      useEffectExecuted.current = true; // Set to true after first execution
+      useEffectExecuted.current = true;
     }
   }, [accessToken]);
+
+  const handleTimeframeChange = async (e) => {
+    const selectedTimeframe = e.target.value;
+    setTimeframe(selectedTimeframe);
+    console.log(selectedTimeframe);
+    await fetchTasks(selectedTimeframe);
+  };
 
   return (
     <div className="board-container">
@@ -139,7 +178,12 @@ export default function Board() {
             <span>Add people</span>
           </p>
         </div>
-        <select name="timeframe" id="timeframe">
+        <select
+          name="timeframe"
+          id="timeframe"
+          value={timeframe}
+          onChange={handleTimeframeChange}
+        >
           <option value="0">This Week</option>
           <option value="1">Today</option>
           <option value="2">This Month</option>

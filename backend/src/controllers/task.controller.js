@@ -290,12 +290,12 @@ const changeTaskPhase = asyncHandler(async (req, res, next) => {
    }
 });
 
-const getTasksCreatedToday = async (req, res) => {
+const getTasksCreatedToday = async (req, res, next) => {
    try {
       const userId = req?.user?._id;
 
       if (!userId) {
-         throw new ApiError(401, "Unauthorized user");
+         throw new ApiError(401, "Unauthorized access");
       }
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -304,11 +304,7 @@ const getTasksCreatedToday = async (req, res) => {
          {
             $match: {
                owner: userId,
-            },
-         },
-         {
-            $match: {
-               updatedAt: {
+               createdAt: {
                   $gte: today,
                },
             },
@@ -336,7 +332,7 @@ const getTasksCreatedToday = async (req, res) => {
          },
          {
             $sort: {
-               createdAt: 1, // Sort by createdAt ascending
+               updatedAt: 1, // Sort by createdAt ascending
             },
          },
          {
@@ -348,11 +344,11 @@ const getTasksCreatedToday = async (req, res) => {
                      title: "$title",
                      checklist: {
                         $map: {
-                           input: "$checkList",
+                           input: "$checklist",
                            as: "item",
                            in: {
-                              task: "$$item.title",
-                              done: "$$item.isCompleted",
+                              title: "$$item.title",
+                              isChecked: "$$item.isChecked",
                               _id: "$$item._id",
                            },
                         },
@@ -381,7 +377,22 @@ const getTasksCreatedToday = async (req, res) => {
       };
 
       tasks.forEach((task) => {
-         formattedTasks[task.status] = task.tasks;
+         switch (task.status) {
+            case "In Progress":
+               formattedTasks.inprogress = task.tasks;
+               break;
+            case "To do":
+               formattedTasks.todo = task.tasks;
+               break;
+            case "Backlog":
+               formattedTasks.backlog = task.tasks;
+               break;
+            case "Done":
+               formattedTasks.done = task.tasks;
+               break;
+            default:
+               break;
+         }
       });
 
       console.log(formattedTasks);
@@ -452,7 +463,7 @@ const getFormattedTasksThisWeek = async (req, res) => {
          },
          {
             $sort: {
-               createdAt: 1, // Sort by createdAt ascending
+               updatedAt: 1, // Sort by createdAt ascending
             },
          },
          {
@@ -523,31 +534,27 @@ const getFormattedTasksThisWeek = async (req, res) => {
    }
 };
 
-const getTasksCreatedThisMonth = async (req, res) => {
+const getTasksCreatedThisMonth = async (req, res, next) => {
    try {
       const userId = req?.user?._id;
 
       if (!userId) {
          throw new ApiError(401, "Unauthorized user");
       }
-
       const startOfMonth = new Date();
+      startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
-      startOfMonth.setDate(1); // Set to the first day of the current month
 
-      const endOfMonth = new Date();
+      const endOfMonth = new Date(startOfMonth);
+      endOfMonth.setMonth(startOfMonth.getMonth() + 1);
+      endOfMonth.setDate(0);
       endOfMonth.setHours(23, 59, 59, 999);
-      endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0); // Set to the last day of the current month
 
       const tasks = await Task.aggregate([
          {
             $match: {
                owner: userId,
-            },
-         },
-         {
-            $match: {
-               updatedAt: {
+               createdAt: {
                   $gte: startOfMonth,
                   $lte: endOfMonth,
                },
@@ -560,14 +567,14 @@ const getTasksCreatedThisMonth = async (req, res) => {
                      branches: [
                         {
                            case: { $eq: ["$state", "inprogress"] },
-                           then: "In Progress",
+                           then: "inprogress",
                         },
-                        { case: { $eq: ["$state", "todo"] }, then: "To do" },
+                        { case: { $eq: ["$state", "todo"] }, then: "todo" },
                         {
                            case: { $eq: ["$state", "backlog"] },
-                           then: "Backlog",
+                           then: "backlog",
                         },
-                        { case: { $eq: ["$state", "done"] }, then: "Done" },
+                        { case: { $eq: ["$state", "done"] }, then: "done" },
                      ],
                      default: "Unknown",
                   },
@@ -576,7 +583,7 @@ const getTasksCreatedThisMonth = async (req, res) => {
          },
          {
             $sort: {
-               createdAt: 1, // Sort by createdAt ascending
+               updatedAt: 1, // Sort by createdAt ascending
             },
          },
          {
@@ -584,22 +591,27 @@ const getTasksCreatedThisMonth = async (req, res) => {
                _id: "$status",
                tasks: {
                   $push: {
-                     id: "$_id",
+                     _id: "$_id",
                      title: "$title",
+                     priority: "$priority",
+                     dueDate: "$dueDate",
                      checklist: {
                         $map: {
-                           input: "$checkList",
+                           input: "$checklist",
                            as: "item",
                            in: {
-                              task: "$$item.title",
-                              done: "$$item.isCompleted",
+                              title: "$$item.title",
+                              isChecked: "$$item.isChecked",
                               _id: "$$item._id",
                            },
                         },
                      },
-                     priority: "$priority",
-                     "due date": "$dueDate",
-                     status: "$status",
+                     assignedTo: "$assignedTo",
+                     state: "$state",
+                     isCompleted: "$isCompleted",
+                     owner: "$owner",
+                     createdAt: "$createdAt",
+                     updatedAt: "$updatedAt",
                   },
                },
             },

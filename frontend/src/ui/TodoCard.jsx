@@ -16,6 +16,7 @@ import {
   updateCheckListInStore,
   updateTaskState,
 } from "../features/tasks/formattedTasksSlice";
+import { isDueDateMissed } from "../utils/taskUtils";
 
 export default function TodoCard({ globalToggle, task }) {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -23,7 +24,7 @@ export default function TodoCard({ globalToggle, task }) {
   const [checkedItems, setCheckedItems] = useState({});
   const [checkedCount, setCheckedCount] = useState(0);
   const [optionsToggle, setOptionsToggle] = useState(false);
-
+  const dueDateMissed = isDueDateMissed(task?.dueDate) && !task.isCompleted;
   useEffect(() => {
     const initialCheckedItems = {};
     let initialCount = 0;
@@ -240,8 +241,8 @@ export default function TodoCard({ globalToggle, task }) {
         }`}
       >
         {task?.dueDate && (
-          <p className="due-date">
-            {task?.dueDate && formatDueDate(task?.dueDate)}
+          <p className={`due-date ${dueDateMissed ? "due-date-missed" : ""}`}>
+            {formatDueDate(task?.dueDate)}
           </p>
         )}
         <div className="other-details">
