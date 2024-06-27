@@ -27,8 +27,8 @@ export default function TodoCard({ globalToggle, task }) {
   const [checkedCount, setCheckedCount] = useState(0);
   const [optionsToggle, setOptionsToggle] = useState(false);
   const menuRef = useRef(null);
-
-  const dueDateMissed = isDueDateMissed(task?.dueDate) && !task.isCompleted;
+  const dueDateMissed = isDueDateMissed(task?.dueDate) && !task?.isCompleted;
+  // const doneInTime = task?.state === "done" && task?.isCompleted;
   const { tempSingleTaskData, setTempSingleTaskData } =
     useContext(TempSingleTask);
   const { showEditTaskBox, setShowEditTaskBox } = useContext(EditTaskContext);
@@ -260,7 +260,12 @@ export default function TodoCard({ globalToggle, task }) {
         }`}
       >
         {task?.dueDate && (
-          <p className={`due-date ${dueDateMissed ? "due-date-missed" : ""}`}>
+          <p
+            className={`due-date ${
+              task?.state === "done" &&
+              (dueDateMissed ? "due-date-missed" : "due-date-fulfill-in-time")
+            }  `}
+          >
             {formatDueDate(task?.dueDate)}
           </p>
         )}

@@ -22,6 +22,8 @@ export default function Settings() {
   const [fullName, setFullName] = useState(loggedInUser?.fullName || "");
   const [email, setEmail] = useState(loggedInUser?.email || "");
   const [oldPassword, setOldPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCpassword, setShowCpassword] = useState(false);
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({
     fullName: "",
@@ -260,12 +262,19 @@ export default function Settings() {
             <input
               ref={oldPasswordRef}
               placeholder="Old password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="oldPassword"
               id="oldPassword"
               onChange={handleOldPasswordChange}
             />
-            <CgEye className="eye-icon" />
+            <CgEye
+              className={`eye-icon ${
+                showPassword && "show-password-highlight"
+              }`}
+              onClick={() => {
+                setShowPassword(!showPassword);
+              }}
+            />
           </div>
           {errors.oldPassword && (
             <span className="error-message">{errors.oldPassword}</span>
@@ -281,12 +290,19 @@ export default function Settings() {
             <input
               ref={passwordRef}
               placeholder="Password"
-              type="password"
+              type={showCpassword ? "text" : "password"}
               name="password"
               id="password"
               onChange={handlePasswordChange}
             />
-            <CgEye className="eye-icon" />
+            <CgEye
+              className={`eye-icon ${
+                showCpassword && "show-password-highlight"
+              }`}
+              onClick={() => {
+                setShowCpassword(!showCpassword);
+              }}
+            />
           </div>
           {errors.password && (
             <span className="error-message">{errors.password}</span>

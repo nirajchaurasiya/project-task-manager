@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { HiOutlineMail } from "react-icons/hi";
 import { TfiLock } from "react-icons/tfi";
 import { CgEye } from "react-icons/cg";
-import { userCommonRoute } from "../routes/userCommonRoute";
 import { isValidEmail } from "../utils/emailValidation";
 import { loginUser } from "../apis/auth";
 import { toast } from "react-toastify";
@@ -16,9 +15,11 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
+
   const setToastText = useContext(ToastContext);
   const displayToast = (text, success) => {
     if (success) {
@@ -140,13 +141,20 @@ export default function Login() {
               <input
                 ref={passwordRef}
                 placeholder="Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 id="password"
                 value={password}
                 onChange={handlePasswordChange}
               />
-              <CgEye className="eye-icon" />
+              <CgEye
+                className={`eye-icon ${
+                  showPassword && "show-password-highlight"
+                }`}
+                onClick={() => {
+                  setShowPassword(!showPassword);
+                }}
+              />
             </div>
             {errors.password && (
               <span className="error-message">{errors.password}</span>

@@ -14,6 +14,8 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCpassword, setShowCpassword] = useState(false);
   const [errors, setErrors] = useState({
     name: "",
     email: "",
@@ -198,13 +200,20 @@ export default function Register() {
               <input
                 ref={passwordRef}
                 placeholder="Password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 id="password"
                 value={password}
                 onChange={handlePasswordChange}
               />
-              <CgEye className="eye-icon" />
+              <CgEye
+                className={`eye-icon ${
+                  showPassword && "show-password-highlight"
+                }`}
+                onClick={() => {
+                  setShowPassword(!showPassword);
+                }}
+              />
             </div>
             {errors.password && (
               <span className="error-message">{errors.password}</span>
@@ -222,13 +231,20 @@ export default function Register() {
               <input
                 ref={confirmPasswordRef}
                 placeholder="Confirm password"
-                type="password"
+                type={showCpassword ? "text" : "password"}
                 name="cpassword"
                 id="cpassword"
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
               />
-              <CgEye className="eye-icon" />
+              <CgEye
+                className={`eye-icon ${
+                  showCpassword && "show-password-highlight"
+                }`}
+                onClick={() => {
+                  setShowCpassword(!showCpassword);
+                }}
+              />
             </div>
             {errors.confirmPassword && (
               <span className="error-message">{errors.confirmPassword}</span>

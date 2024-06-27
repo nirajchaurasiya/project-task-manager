@@ -4,6 +4,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+const isDueDateMissed = (dueDate) => {
+   const currentDate = new Date();
+   const dueDateObj = new Date(dueDate);
+   return currentDate > dueDateObj;
+};
+
 const createTask = asyncHandler(async (req, res, next) => {
    try {
       const userId = req?.user?._id;
@@ -258,7 +264,19 @@ const changeTaskPhase = asyncHandler(async (req, res, next) => {
          throw new ApiError(404, "Task doesn't exists");
       }
 
-      await Task.findByIdAndUpdate(taskId, { $set: { state } }, { new: true });
+      await Task.findByIdAndUpdate(
+         taskId,
+         { $set: { state, isCompleted: false } },
+         { new: true }
+      );
+
+      if (state === "done" && !isDueDateMissed(task?.dueDate)) {
+         await Task.findByIdAndUpdate(
+            taskId,
+            { $set: { isCompleted: true } },
+            { new: true }
+         );
+      }
 
       const updatedTask = await Task.findById(taskId);
 

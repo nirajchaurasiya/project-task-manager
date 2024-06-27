@@ -183,3 +183,10 @@
 .input-field.error-border {
   border: 1px solid var(--error-red);
 }
+.show-password-highlight path {
+  color: black !important;
+  fill: black;
+}
+.eye-icon {
+  cursor: pointer;
+}

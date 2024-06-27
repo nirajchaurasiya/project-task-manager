@@ -19,6 +19,7 @@ import {
 } from "../apis/tasks";
 import Spinner from "./Spinner";
 import { saveFormattedTasks } from "../features/tasks/formattedTasksSlice";
+import { boardDate } from "../utils/boardUtils";
 export default function Board() {
   const [showPeople, setShowPeople] = useState(false);
   const [addedAlert, setAddedAlert] = useState(false);
@@ -164,7 +165,7 @@ export default function Board() {
         <p>
           Welcome! <span>{loggedInUser?.fullName}</span>
         </p>
-        <span>23 Jun, 2024</span>
+        <span>{boardDate()}</span>
       </div>
       <div className="board-second-options">
         <div className="board-add-people">

@@ -1,8 +1,8 @@
 const formatDueDate = (string) => {
   const date = new Date(string);
 
-  const day = date.getUTCDate(); // Correct method to get the day of the month
-  const monthIndex = date.getUTCMonth(); // Get the zero-based month index
+  const day = date.getUTCDate();
+  const monthIndex = date.getUTCMonth();
 
   const monthNames = [
     "Jan",
@@ -18,7 +18,7 @@ const formatDueDate = (string) => {
     "Nov",
     "Dec",
   ];
-  const monthName = monthNames[monthIndex]; // Get the month name from the array
+  const monthName = monthNames[monthIndex];
 
   //   console.log("Day:", day);
   //   console.log("Month:", monthName);

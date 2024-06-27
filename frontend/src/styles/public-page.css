@@ -97,3 +97,7 @@
   background-color: var(--error-red);
   color: white;
 }
+.due-date-fulfill-in-time {
+  background-color: rgb(3, 163, 3);
+  color: white;
+}
