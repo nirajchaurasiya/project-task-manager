@@ -32,7 +32,7 @@ export default function TodoCard({ globalToggle, task }) {
   const { tempSingleTaskData, setTempSingleTaskData } =
     useContext(TempSingleTask);
   const { showEditTaskBox, setShowEditTaskBox } = useContext(EditTaskContext);
-  console.log(task);
+  // console.log(task);
   useEffect(() => {
     const initialCheckedItems = {};
     let initialCount = 0;

@@ -26,7 +26,6 @@ export default function Todo() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hasUserClickedOnDateBtn, setHasUserClickedOnDateBtn] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState(null);
-
   const [errors, setErrors] = useState({
     titleError: "",
     priorityError: "",
@@ -42,7 +41,9 @@ export default function Todo() {
   };
 
   const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
+
   const setToastText = useContext(ToastContext);
+
   const displayToast = (text, success) => {
     if (success) {
       setToastText(text);
@@ -54,7 +55,10 @@ export default function Todo() {
   };
 
   const loggedInUser = useSelector((state) => state.loggedInUser.loggedInUser);
+
   const [title, setTitle] = useState("");
+
+  const checklistInputRefs = useRef([]);
 
   const addChecklistItem = () => {
     const newChecklistItems = [
@@ -73,6 +77,12 @@ export default function Todo() {
       ...prevErrors,
       checkListError: newChecklistItems.length === 0 ? checkListError : "",
     }));
+
+    // Add a ref for the new checklist item
+    setTimeout(() => {
+      const lastIndex = newChecklistItems.length - 1;
+      checklistInputRefs.current[lastIndex]?.focus();
+    }, 0);
   };
 
   const deleteChecklistItem = (index) => {
@@ -410,6 +420,7 @@ export default function Todo() {
                           type="text"
                           className="select-checklist-input"
                           value={item.title}
+                          ref={(el) => (checklistInputRefs.current[index] = el)}
                           onChange={(e) =>
                             handleChecklistChange(
                               index,
