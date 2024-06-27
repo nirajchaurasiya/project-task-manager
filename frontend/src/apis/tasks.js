@@ -130,6 +130,43 @@ const updateTaskPhase = async (taskToUpdateWithPhase, accessToken) => {
   }
 };
 
+const updateTask = async (fd) => {
+  try {
+    const { accessToken, taskId, taskData } = fd;
+
+    if (!accessToken || !taskId || !taskData) {
+      return { success: false, msg: "All fields are mandatory" };
+    }
+
+    const response = await axios.patch(
+      `${taskCommonRoute}/update/${taskId}`,
+      taskData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const { success, statusCode, data } = response.data;
+
+    if (success && statusCode === 200) {
+      return { success: true, msg: "Task updated", task: data };
+    }
+    return { success: false, msg: "Something went wrong" };
+  } catch (error) {
+    console.log(error);
+
+    const status = error.response?.status;
+    if (status === 400) {
+      return { success: false, msg: "Unauthrorized request" };
+    } else if (status === 400) {
+      return { success: false, msg: "Task doesn't exists" };
+    }
+    return { success: false, msg: "Something went wrong" };
+  }
+};
+
 const getTaskWithId = async (taskId) => {
   try {
     const response = await axios.get(`${taskCommonRoute}/get-task/${taskId}`);
@@ -303,4 +340,5 @@ export {
   getFormattedTasksToday,
   deleteTaskWithId,
   getFormattedTasksThisMonth,
+  updateTask,
 };

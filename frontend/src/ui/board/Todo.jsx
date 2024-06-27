@@ -9,8 +9,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContext } from "../../context/ToastContext";
 import { toast } from "react-toastify";
-import { createTask } from "../../apis/tasks";
-import { addSingleTask } from "../../features/tasks/formattedTasksSlice";
+import { createTask, updateTask } from "../../apis/tasks";
+import {
+  addSingleTask,
+  updateSingleTask,
+} from "../../features/tasks/formattedTasksSlice";
+import { TempSingleTask } from "../../context/TempSingleTask";
+import { EditTaskContext } from "../../context/EditProfileContext";
 
 export default function Todo() {
   const [showTodo, setShowTodo] = useState(false);
@@ -21,6 +26,7 @@ export default function Todo() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hasUserClickedOnDateBtn, setHasUserClickedOnDateBtn] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState(null);
+
   const [errors, setErrors] = useState({
     titleError: "",
     priorityError: "",
@@ -28,11 +34,14 @@ export default function Todo() {
   });
   const [globalToggle, setGlobalToggle] = useState(false);
   const accessToken = useSelector((state) => state.accessToken.accessToken);
+  const { tempSingleTaskData, setTempSingleTaskData } =
+    useContext(TempSingleTask);
+  const { showEditTaskBox, setShowEditTaskBox } = useContext(EditTaskContext);
   const handleGlobalToggle = () => {
     setGlobalToggle(!globalToggle);
   };
+
   const tasks = useSelector((state) => state.formattedTasks.formattedTasks);
-  // console.log(tasks);
   const setToastText = useContext(ToastContext);
   const displayToast = (text, success) => {
     if (success) {
@@ -88,14 +97,30 @@ export default function Todo() {
   const titleRef = useRef();
 
   useEffect(() => {
-    setChecklistItems([]);
-    setShowAssignPeople(false);
-    setAssignee("Add an assignee");
-    setSelectedPriority(null);
-    setHasUserClickedOnDateBtn(false);
-    setTitle("");
-    setErrors({ titleError: "", priorityError: "", checkListError: "" });
-  }, [showTodo]);
+    if (tempSingleTaskData) {
+      // If tempSingleTaskData exists, populate the form fields with its data
+      setTitle(tempSingleTaskData.title);
+      setChecklistItems(tempSingleTaskData.checklist);
+      setSelectedPriority(tempSingleTaskData.priority);
+      setAssignee(tempSingleTaskData.assignedTo);
+      setStartDate(
+        tempSingleTaskData.dueDate
+          ? new Date(tempSingleTaskData.dueDate)
+          : new Date()
+      );
+      setHasUserClickedOnDateBtn(!!tempSingleTaskData.dueDate);
+    } else {
+      // Otherwise, reset the form fields
+      setChecklistItems([]);
+      setShowAssignPeople(false);
+      setAssignee("Add an assignee");
+      setSelectedPriority(null);
+      setHasUserClickedOnDateBtn(false);
+      setTitle("");
+      setErrors({ titleError: "", priorityError: "", checkListError: "" });
+    }
+  }, [showTodo, showEditTaskBox, tempSingleTaskData]);
+
   const dispatch = useDispatch();
   const handlePriorityClick = (priority) => {
     setSelectedPriority(priority);
@@ -159,27 +184,43 @@ export default function Todo() {
     }
 
     if (valid) {
-      // console.log({
-      //   title,
-      //   priority: selectedPriority,
-      //   checklist: checklistItems,
-      //   dueDate: startDate && hasUserClickedOnDateBtn ? startDate : "",
-      //   assignedTo: assignee,
-      // });
-      const response = await createTask(accessToken, {
+      const formattedDueDate =
+        startDate && hasUserClickedOnDateBtn ? startDate.toISOString() : "";
+
+      const taskData = {
         title,
         priority: selectedPriority,
         checklist: checklistItems,
-        dueDate: startDate && hasUserClickedOnDateBtn ? startDate : "",
+        dueDate: formattedDueDate,
         assignedTo: assignee,
-      });
+      };
+
+      let response;
+      if (tempSingleTaskData) {
+        // Update existing task
+        response = await updateTask({
+          accessToken,
+          taskId: tempSingleTaskData._id,
+          taskData,
+        });
+      } else {
+        // Create new task
+        response = await createTask(accessToken, taskData);
+      }
+
       const { success, msg, task } = response;
 
       if (success) {
-        dispatch(addSingleTask(task));
+        if (tempSingleTaskData) {
+          dispatch(updateSingleTask(task));
+        } else {
+          dispatch(addSingleTask(task));
+        }
       }
-      displayToast(msg, success);
       setShowTodo(false);
+      setShowEditTaskBox(false);
+      displayToast(msg, success);
+      setTempSingleTaskData(null);
     }
   };
 
@@ -210,11 +251,13 @@ export default function Todo() {
         tasks?.todo.map((task, index) => (
           <TodoCard key={index} globalToggle={globalToggle} task={task} />
         ))}
-      {showTodo && (
+      {(showTodo || showEditTaskBox) && (
         <div
           className="overflow-container"
           onClick={() => {
-            setShowTodo(!showTodo);
+            setShowTodo(false);
+            setShowEditTaskBox(false);
+            setTempSingleTaskData(null);
           }}
         >
           <div className="overflow-mid-container todo-form">
@@ -359,11 +402,6 @@ export default function Todo() {
                               e.target.value
                             )
                           }
-                          // style={
-                          //   !item.title && errors.checkListError
-                          //     ? { border: "1px solid var(--error-red)" }
-                          //     : {}
-                          // }
                         />
                       </div>
                       <MdDelete onClick={() => deleteChecklistItem(index)} />
@@ -396,7 +434,15 @@ export default function Todo() {
                   />
                 )}
                 <div className="save-cancel-buttons">
-                  <button onClick={() => setShowTodo(false)}>Cancel</button>
+                  <button
+                    onClick={() => {
+                      setShowTodo(false);
+                      setShowEditTaskBox(false);
+                      setTempSingleTaskData(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
                   <button onClick={handleTaskCreation}>Save</button>
                 </div>
               </div>

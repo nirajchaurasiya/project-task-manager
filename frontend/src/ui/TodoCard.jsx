@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { formatDueDate } from "../utils/formatDate";
@@ -17,6 +17,8 @@ import {
   updateTaskState,
 } from "../features/tasks/formattedTasksSlice";
 import { isDueDateMissed } from "../utils/taskUtils";
+import { EditTaskContext } from "../context/EditProfileContext";
+import { TempSingleTask } from "../context/TempSingleTask";
 
 export default function TodoCard({ globalToggle, task }) {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -24,13 +26,18 @@ export default function TodoCard({ globalToggle, task }) {
   const [checkedItems, setCheckedItems] = useState({});
   const [checkedCount, setCheckedCount] = useState(0);
   const [optionsToggle, setOptionsToggle] = useState(false);
+  const menuRef = useRef(null);
+
   const dueDateMissed = isDueDateMissed(task?.dueDate) && !task.isCompleted;
+  const { tempSingleTaskData, setTempSingleTaskData } =
+    useContext(TempSingleTask);
+  const { showEditTaskBox, setShowEditTaskBox } = useContext(EditTaskContext);
+
   useEffect(() => {
     const initialCheckedItems = {};
     let initialCount = 0;
     task?.checklist?.forEach((item) => {
       initialCheckedItems[item._id] = item.isChecked;
-
       if (item.isChecked) {
         initialCount++;
       }
@@ -40,12 +47,10 @@ export default function TodoCard({ globalToggle, task }) {
   }, [task]);
 
   useEffect(() => {
-    // Check if globalToggle is true, then reset localStorage
     if (globalToggle) {
       localStorage.removeItem("expandedCheckList");
       setShowCheckListToggle(false);
     } else {
-      // Otherwise, initialize showCheckListToggle from localStorage
       const expandedCheckList =
         JSON.parse(localStorage.getItem("expandedCheckList")) || [];
       setShowCheckListToggle(expandedCheckList.includes(task._id));
@@ -76,7 +81,6 @@ export default function TodoCard({ globalToggle, task }) {
 
     const { success, msg } = response;
     const updatedTask = response.task;
-    // console.log(`task `, updatedTask);
     if (success) {
       dispatch(updateTaskState(updatedTask));
     }
@@ -134,6 +138,7 @@ export default function TodoCard({ globalToggle, task }) {
       JSON.stringify(Array.from(expandedCheckList))
     );
   };
+
   const handleShareButtonTask = () => {
     const mainUrl = new URL(window.location.href);
     const shareUrl = `${mainUrl.origin}/share/${task._id}`;
@@ -189,9 +194,23 @@ export default function TodoCard({ globalToggle, task }) {
         {optionsToggle && (
           <div
             className="menu-container"
-            onClick={() => setOptionsToggle(!optionsToggle)}
+            ref={menuRef}
+            onClick={() => {
+              setOptionsToggle(false);
+            }}
+            style={{
+              top: `${menuRef.current?.offsetTop}px`,
+              left: `${menuRef.current?.offsetLeft}px`,
+            }}
           >
-            <p>Edit</p>
+            <p
+              onClick={() => {
+                setTempSingleTaskData(task);
+                setShowEditTaskBox(!showEditTaskBox);
+              }}
+            >
+              Edit
+            </p>
             <p onClick={handleShareButtonTask}>Share</p>
             <p
               onClick={() => {

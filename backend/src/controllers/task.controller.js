@@ -107,16 +107,9 @@ const deleteTask = asyncHandler(async (req, res, next) => {
 
 const updateTask = asyncHandler(async (req, res, next) => {
    try {
-      const {
-         title,
-         priority,
-         dueDate,
-         checkList,
-         assignedTo,
-         state,
-         isCompleted,
-      } = req?.body;
-
+      const { title, priority, dueDate, checklist, assignedTo } = req?.body;
+      console.log(req?.body?.title);
+      console.log(req?.body?.taskData);
       const taskId = req?.params?.taskId;
 
       const userId = req?.user?._id;
@@ -143,20 +136,12 @@ const updateTask = asyncHandler(async (req, res, next) => {
          task.dueDate = dueDate;
       }
 
-      if (checkList?.length > 0) {
-         task.checklist = checkList;
+      if (checklist && checklist?.length > 0) {
+         task.checklist = checklist;
       }
 
       if (assignedTo) {
          task.assignedTo = assignedTo;
-      }
-
-      if (state) {
-         task.state = state;
-      }
-
-      if (isCompleted) {
-         task.isCompleted = isCompleted;
       }
 
       await task.save();

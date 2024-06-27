@@ -22,6 +22,15 @@ export const formattedTasksSlice = createSlice({
                 ? { ...task, checklist: updatedTask.checklist }
                 : task
           );
+          // Move updated task to the end
+          state.formattedTasks.backlog.push(
+            state.formattedTasks.backlog.splice(
+              state.formattedTasks.backlog.findIndex(
+                (task) => task._id === taskId
+              ),
+              1
+            )[0]
+          );
           break;
         case "todo":
           // Update todo tasks
@@ -29,6 +38,15 @@ export const formattedTasksSlice = createSlice({
             task._id === taskId
               ? { ...task, checklist: updatedTask.checklist }
               : task
+          );
+          // Move updated task to the end
+          state.formattedTasks.todo.push(
+            state.formattedTasks.todo.splice(
+              state.formattedTasks.todo.findIndex(
+                (task) => task._id === taskId
+              ),
+              1
+            )[0]
           );
           break;
         case "inprogress":
@@ -39,6 +57,15 @@ export const formattedTasksSlice = createSlice({
                 ? { ...task, checklist: updatedTask.checklist }
                 : task
           );
+          // Move updated task to the end
+          state.formattedTasks.inprogress.push(
+            state.formattedTasks.inprogress.splice(
+              state.formattedTasks.inprogress.findIndex(
+                (task) => task._id === taskId
+              ),
+              1
+            )[0]
+          );
           break;
         case "done":
           // Update done tasks
@@ -47,23 +74,31 @@ export const formattedTasksSlice = createSlice({
               ? { ...task, checklist: updatedTask.checklist }
               : task
           );
+          // Move updated task to the end
+          state.formattedTasks.done.push(
+            state.formattedTasks.done.splice(
+              state.formattedTasks.done.findIndex(
+                (task) => task._id === taskId
+              ),
+              1
+            )[0]
+          );
           break;
         default:
           break;
       }
     },
+
     updateTaskState: (state, action) => {
       const updatedTask = action.payload;
       const taskId = updatedTask._id;
 
-      // Remove the task from its previous state
       Object.keys(state.formattedTasks).forEach((key) => {
         state.formattedTasks[key] = state.formattedTasks[key].filter(
           (task) => task._id !== taskId
         );
       });
 
-      // Add the task to its new state
       state.formattedTasks[updatedTask.state].push({
         ...updatedTask,
         state: updatedTask.state,
@@ -75,7 +110,6 @@ export const formattedTasksSlice = createSlice({
     // },
 
     addSingleTask: (state, action) => {
-      // Logic to add a single task to the appropriate state array
       const newTask = action.payload;
       switch (newTask.state) {
         case "backlog":
@@ -105,6 +139,62 @@ export const formattedTasksSlice = createSlice({
         ].filter((e) => e._id !== taskId);
       }
     },
+
+    updateSingleTask: (state, action) => {
+      const updatedTask = action.payload;
+      let existingTaskIndex = null;
+      let taskList = null;
+
+      switch (updatedTask.state) {
+        case "backlog":
+          existingTaskIndex = state.formattedTasks.backlog.findIndex(
+            (task) => task._id === updatedTask._id
+          );
+
+          if (existingTaskIndex !== -1) {
+            state.formattedTasks.backlog[existingTaskIndex] = updatedTask;
+            taskList = state.formattedTasks.backlog;
+          }
+          break;
+        case "todo":
+          existingTaskIndex = state.formattedTasks.todo.findIndex(
+            (task) => task._id === updatedTask._id
+          );
+
+          if (existingTaskIndex !== -1) {
+            state.formattedTasks.todo[existingTaskIndex] = updatedTask;
+            taskList = state.formattedTasks.todo;
+          }
+          break;
+        case "inprogress":
+          existingTaskIndex = state.formattedTasks.inprogress.findIndex(
+            (task) => task._id === updatedTask._id
+          );
+
+          if (existingTaskIndex !== -1) {
+            state.formattedTasks.inprogress[existingTaskIndex] = updatedTask;
+            taskList = state.formattedTasks.inprogress;
+          }
+          break;
+        case "done":
+          existingTaskIndex = state.formattedTasks.done.findIndex(
+            (task) => task._id === updatedTask._id
+          );
+
+          if (existingTaskIndex !== -1) {
+            state.formattedTasks.done[existingTaskIndex] = updatedTask;
+            taskList = state.formattedTasks.done;
+          }
+          break;
+        default:
+          break;
+      }
+
+      if (taskList && existingTaskIndex !== -1) {
+        const movedTask = taskList.splice(existingTaskIndex, 1)[0];
+        taskList.push(movedTask);
+      }
+    },
   },
 });
 
@@ -114,6 +204,7 @@ export const {
   updateCheckListInStore,
   updateTaskState,
   removeSingleTaskById,
+  updateSingleTask,
 } = formattedTasksSlice.actions;
 
 export default formattedTasksSlice.reducer;
