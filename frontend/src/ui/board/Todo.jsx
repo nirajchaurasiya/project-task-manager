@@ -114,7 +114,6 @@ export default function Todo() {
       // Otherwise, reset the form fields
       setChecklistItems([]);
       setShowAssignPeople(false);
-      setAssignee("Add an assignee");
       setSelectedPriority(null);
       setHasUserClickedOnDateBtn(false);
       setTitle("");
