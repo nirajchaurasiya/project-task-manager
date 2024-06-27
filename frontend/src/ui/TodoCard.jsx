@@ -262,8 +262,11 @@ export default function TodoCard({ globalToggle, task }) {
         {task?.dueDate && (
           <p
             className={`due-date ${
-              task?.state === "done" &&
-              (dueDateMissed ? "due-date-missed" : "due-date-fulfill-in-time")
+              dueDateMissed
+                ? "due-date-missed"
+                : task?.state === "done"
+                ? "due-date-fulfill-in-time"
+                : ""
             }  `}
           >
             {formatDueDate(task?.dueDate)}
