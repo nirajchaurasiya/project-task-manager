@@ -314,19 +314,19 @@ const getTasksCreatedToday = async (req, res, next) => {
          },
          {
             $addFields: {
-               status: {
+               state: {
                   $switch: {
                      branches: [
                         {
                            case: { $eq: ["$state", "inprogress"] },
-                           then: "In Progress",
+                           then: "inprogress",
                         },
-                        { case: { $eq: ["$state", "todo"] }, then: "To do" },
+                        { case: { $eq: ["$state", "todo"] }, then: "todo" },
                         {
                            case: { $eq: ["$state", "backlog"] },
-                           then: "Backlog",
+                           then: "backlog",
                         },
-                        { case: { $eq: ["$state", "done"] }, then: "Done" },
+                        { case: { $eq: ["$state", "done"] }, then: "done" },
                      ],
                      default: "Unknown",
                   },
@@ -340,7 +340,7 @@ const getTasksCreatedToday = async (req, res, next) => {
          },
          {
             $group: {
-               _id: "$status",
+               _id: "$state",
                tasks: {
                   $push: {
                      id: "$_id",
@@ -357,8 +357,8 @@ const getTasksCreatedToday = async (req, res, next) => {
                         },
                      },
                      priority: "$priority",
-                     "due date": "$dueDate",
-                     status: "$status",
+                     dueDate: "$dueDate",
+                     state: "$state",
                   },
                },
             },
@@ -366,7 +366,7 @@ const getTasksCreatedToday = async (req, res, next) => {
          {
             $project: {
                _id: 0,
-               status: "$_id",
+               state: "$_id",
                tasks: 1,
             },
          },
@@ -380,17 +380,17 @@ const getTasksCreatedToday = async (req, res, next) => {
       };
 
       tasks.forEach((task) => {
-         switch (task.status) {
-            case "In Progress":
+         switch (task.state) {
+            case "inprogress":
                formattedTasks.inprogress = task.tasks;
                break;
-            case "To do":
+            case "todo":
                formattedTasks.todo = task.tasks;
                break;
-            case "Backlog":
+            case "backlog":
                formattedTasks.backlog = task.tasks;
                break;
-            case "Done":
+            case "done":
                formattedTasks.done = task.tasks;
                break;
             default:
