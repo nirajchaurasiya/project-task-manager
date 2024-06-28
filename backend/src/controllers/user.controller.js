@@ -233,6 +233,12 @@ const updateProfile = asyncHandler(async (req, res, next) => {
 
       const { email, fullName, password, oldPassword } = req?.body;
 
+      const isEmailExists = await User.findOne({ email });
+
+      if (isEmailExists) {
+         throw new ApiError(405, "Email already exists");
+      }
+
       if (email) {
          user.email = email;
       }
@@ -258,7 +264,9 @@ const updateProfile = asyncHandler(async (req, res, next) => {
 
       await user.save();
 
-      const updatedUser = await User.findById(userId).select("-refreshToken");
+      const updatedUser = await User.findById(userId).select(
+         "-password -refreshToken"
+      );
 
       return res
          .status(200)

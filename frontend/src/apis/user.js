@@ -27,6 +27,8 @@ const updateProfile = async (fd, accessToken) => {
       return { success: false, msg: "Unauthorized request" };
     } else if (status === 404) {
       return { success: false, msg: "User couldn't be found" };
+    } else if (status === 405) {
+      return { success: false, msg: "Email already exists" };
     } else if (status === 422) {
       return { success: false, msg: "New password must differ" };
     }

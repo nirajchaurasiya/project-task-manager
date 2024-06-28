@@ -193,11 +193,15 @@ export default function Settings() {
         const { success, msg, user } = response;
         displayToast(msg, success);
         if (success) {
-          localStorage.removeItem("isCookieFromProManage");
-          deleteAllCookies();
-          navigate("/");
-          displayToast("Please login again");
-          dispatch(clearLoggedInUser());
+          if (changes.email || changes.password) {
+            localStorage.removeItem("isCookieFromProManage");
+            deleteAllCookies();
+            navigate("/");
+            displayToast("Please login again");
+            dispatch(clearLoggedInUser());
+          } else {
+            dispatch(saveLoggedInUser(user));
+          }
         }
       } catch (error) {
         console.log(error);

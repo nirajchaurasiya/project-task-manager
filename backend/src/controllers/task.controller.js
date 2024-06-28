@@ -149,7 +149,7 @@ const updateTask = asyncHandler(async (req, res, next) => {
       // No need to check here as if it contains automatically update it
 
       // if (assignedTo) {
-         task.assignedTo = assignedTo;
+      task.assignedTo = assignedTo;
       // }
 
       await task.save();
@@ -711,7 +711,7 @@ const getAllAnalytics = asyncHandler(async (req, res, next) => {
       }
       const user = await User.findById(userId);
 
-      if(!user){
+      if (!user) {
          throw new ApiError(401, "Unauthorized request");
       }
 
