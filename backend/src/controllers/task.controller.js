@@ -146,9 +146,11 @@ const updateTask = asyncHandler(async (req, res, next) => {
          task.checklist = checklist;
       }
 
-      if (assignedTo) {
+      // No need to check here as if it contains automatically update it
+
+      // if (assignedTo) {
          task.assignedTo = assignedTo;
-      }
+      // }
 
       await task.save();
 
@@ -300,13 +302,20 @@ const getTasksCreatedToday = async (req, res, next) => {
       if (!userId) {
          throw new ApiError(401, "Unauthorized access");
       }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "Unauthorized access");
+      }
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
       const tasks = await Task.aggregate([
          {
             $match: {
-               owner: userId,
+               $or: [{ owner: userId }, { assignedTo: user.email }],
                createdAt: {
                   $gte: today,
                },
@@ -359,6 +368,7 @@ const getTasksCreatedToday = async (req, res, next) => {
                      priority: "$priority",
                      dueDate: "$dueDate",
                      state: "$state",
+                     assignedTo: "$assignedTo",
                   },
                },
             },
@@ -420,7 +430,12 @@ const getFormattedTasksThisWeek = async (req, res) => {
    try {
       const userId = req?.user?._id;
       if (!userId) {
-         throw new ApiError(401, "Unatuhorized user");
+         throw new ApiError(401, "Unatuhorized access");
+      }
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "Unauthorized access");
       }
       const startOfWeek = new Date();
       startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -432,7 +447,7 @@ const getFormattedTasksThisWeek = async (req, res) => {
       const tasks = await Task.aggregate([
          {
             $match: {
-               owner: userId,
+               $or: [{ owner: userId }, { assignedTo: user.email }],
             },
          },
          {
@@ -544,6 +559,11 @@ const getTasksCreatedThisMonth = async (req, res, next) => {
       if (!userId) {
          throw new ApiError(401, "Unauthorized user");
       }
+      const user = await User.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "Unauthorized access");
+      }
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
@@ -556,7 +576,7 @@ const getTasksCreatedThisMonth = async (req, res, next) => {
       const tasks = await Task.aggregate([
          {
             $match: {
-               owner: userId,
+               $or: [{ owner: userId }, { assignedTo: user.email }],
                createdAt: {
                   $gte: startOfMonth,
                   $lte: endOfMonth,
@@ -689,14 +709,18 @@ const getAllAnalytics = asyncHandler(async (req, res, next) => {
       if (!userId) {
          throw new ApiError(401, "Unauthorized request");
       }
+      const user = await User.findById(userId);
+
+      if(!user){
+         throw new ApiError(401, "Unauthorized request");
+      }
 
       const allStates = ["backlog", "todo", "inprogress", "done"];
       const allPriorities = ["low", "moderate", "high"];
-
       const analytics = await Task.aggregate([
          {
             $match: {
-               owner: userId,
+               $or: [{ owner: userId }, { assignedTo: user.email }],
             },
          },
          {

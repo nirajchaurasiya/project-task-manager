@@ -20,7 +20,7 @@ export default function Done() {
       </div>
       {tasks &&
         tasks?.done.map((task, index) => (
-          <TodoCard key={index} globalToggle={globalToggle} task={task} />
+          <TodoCard key={index} globalToggle={globalToggle} task={task} setGlobalToggle={setGlobalToggle} />
         ))}
     </>
   );

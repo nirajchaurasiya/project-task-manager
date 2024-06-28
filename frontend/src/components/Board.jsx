@@ -66,6 +66,7 @@ export default function Board() {
       const { success, newAssignee, msg } = response;
       // console.log(newAssignee, msg);
       if (success) {
+        setAddedAlert(true)
         dispatch(addAssigneeToRedux(newAssignee));
         displayToast(msg, success);
       } else {
@@ -87,6 +88,8 @@ export default function Board() {
   };
   useEffect(() => {
     setErrors({ email: "" });
+
+    setEmail("")
   }, [showPeople]);
 
   const useEffectExecuted = useRef(false);
@@ -213,6 +216,8 @@ export default function Board() {
           className="overflow-container"
           onClick={() => {
             setShowPeople(!showPeople);
+            setShowPeople(false);
+            setAddedAlert(false);
           }}
         >
           <div className="overflow-mid-container">
@@ -221,10 +226,11 @@ export default function Board() {
                 className="main-content"
                 onClick={(e) => {
                   e.stopPropagation();
+                 
                 }}
               >
                 <div className="alert-notification">
-                  <p>Ramgupta@gmail.com added to board</p>
+                  <p>{email} added to board</p><br />
                   <button
                     onClick={() => {
                       setShowPeople(false);
@@ -239,7 +245,9 @@ export default function Board() {
               <div
                 className="main-content"
                 onClick={(e) => {
+                  
                   e.stopPropagation();
+                  
                 }}
               >
                 <p className="add-people-text">Add people to the board</p>

@@ -99,6 +99,7 @@ export default function Todo() {
   };
 
   const handleDateChange = (date) => {
+    console.log(date);
     setStartDate(date);
     setShowDatePicker(false);
     setHasUserClickedOnDateBtn(true);
@@ -109,7 +110,7 @@ export default function Todo() {
 
   useEffect(() => {
     if (tempSingleTaskData) {
-      // If tempSingleTaskData exists, populate the form fields with its data
+      console.log(new Date(tempSingleTaskData.dueDate));
       setTitle(tempSingleTaskData.title);
       setChecklistItems(tempSingleTaskData.checklist);
       setSelectedPriority(tempSingleTaskData.priority);
@@ -121,14 +122,15 @@ export default function Todo() {
       );
       setHasUserClickedOnDateBtn(!!tempSingleTaskData.dueDate);
     } else {
-      // Otherwise, reset the form fields
       setChecklistItems([]);
       setShowAssignPeople(false);
       setSelectedPriority(null);
       setHasUserClickedOnDateBtn(false);
+      setAssignee("");
       setTitle("");
       setErrors({ titleError: "", priorityError: "", checkListError: "" });
     }
+    setShowDatePicker(false);
   }, [showTodo, showEditTaskBox, tempSingleTaskData]);
 
   const dispatch = useDispatch();
@@ -196,7 +198,6 @@ export default function Todo() {
     if (valid) {
       const formattedDueDate =
         startDate && hasUserClickedOnDateBtn ? startDate.toISOString() : "";
-
       const taskData = {
         title,
         priority: selectedPriority,
@@ -204,7 +205,6 @@ export default function Todo() {
         dueDate: formattedDueDate,
         assignedTo: assignee,
       };
-
       let response;
       if (tempSingleTaskData) {
         // Update existing task
@@ -244,17 +244,19 @@ export default function Todo() {
     setErrors((prevErrors) => ({ ...prevErrors, titleError: titleError }));
   };
 
-  useEffect(() => {
-    // Function to scroll to the bottom of the checklist container
-    const scrollToBottom = () => {
-      if (checklistContainerRef.current) {
-        checklistContainerRef.current.scrollTop =
-          checklistContainerRef.current.scrollHeight;
-      }
-    };
+  const handleAddTodayButtonClick = () => {
+    // if (tempSingleTaskData) {
+    setStartDate(new Date());
+    setShowDatePicker(false);
+    setHasUserClickedOnDateBtn(true);
+    // }
+  };
 
-    scrollToBottom(); // Call the scroll function initially and whenever checklistItems change
-  }, [checklistItems]);
+  const handleClearTodayButtonClick = () => {
+    setStartDate(null);
+    setShowDatePicker(false);
+    setHasUserClickedOnDateBtn(false);
+  };
 
   return (
     <>
@@ -271,7 +273,12 @@ export default function Todo() {
       </div>
       {tasks &&
         tasks?.todo.map((task, index) => (
-          <TodoCard key={index} globalToggle={globalToggle} task={task} />
+          <TodoCard
+            key={index}
+            globalToggle={globalToggle}
+            task={task}
+            setGlobalToggle={setGlobalToggle}
+          />
         ))}
       {(showTodo || showEditTaskBox) && (
         <div
@@ -348,43 +355,49 @@ export default function Todo() {
                   {errors.priorityError && <span>{errors?.priorityError}</span>}
                 </div>
 
-                {loggedInUser?.chosenAssignees?.length > 0 && (
-                  <div className="assign-to-task">
-                    <div className="assign-task-menu">
-                      <p>Assign to</p>
-                      <div
-                        className="select-button"
-                        onClick={() => {
-                          setShowAssignPeople(!showAssignPeople);
-                        }}
-                      >
-                        <p>{assignee ? assignee : "Add an assignee"}</p>
-                        <p>
-                          <MdKeyboardArrowDown />
-                        </p>
+                {loggedInUser?.chosenAssignees?.length > 0 &&
+                  tempSingleTaskData?.assignedTo?.toLowerCase() !==
+                    loggedInUser?.email && (
+                    <div className="assign-to-task">
+                      <div className="assign-task-menu">
+                        <p>Assign to</p>
+                        <div
+                          className="select-button"
+                          onClick={() => {
+                            setShowAssignPeople(!showAssignPeople);
+                          }}
+                        >
+                          <p>{assignee ? assignee : "Add an assignee"}</p>
+                          <p>
+                            <MdKeyboardArrowDown />
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    {showAssignPeople && (
-                      <div name="assign" className="assign-options">
-                        {loggedInUser.chosenAssignees.map((e) => (
-                          <div key={e._id} className="assign-option">
-                            <div className="user-details">
-                              <p>{e?.email?.slice(0, 2)}</p>
-                              <p>{e?.email}</p>
+                      {showAssignPeople && (
+                        <div name="assign" className="assign-options">
+                          {loggedInUser.chosenAssignees.map((e) => (
+                            <div key={e._id} className="assign-option">
+                              <div className="user-details">
+                                <p>{e?.email?.slice(0, 2)}</p>
+                                <p>{e?.email}</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  if (assignee === e?.email) {
+                                    setAssignee("");
+                                    setShowAssignPeople(false);
+                                  } else setAssignee(e?.email);
+                                  setShowAssignPeople(false);
+                                }}
+                              >
+                                {assignee === e.email ? "Assigned" : "Assign"}
+                              </button>
                             </div>
-                            <button
-                              onClick={() => {
-                                setAssignee(e?.email);
-                              }}
-                            >
-                              {assignee === e.email ? "Assigned" : "Assign"}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                 <div className="checklist-length">
                   <p>
@@ -452,12 +465,20 @@ export default function Todo() {
                     : "Select Due Date"}
                 </button>
                 {showDatePicker && (
-                  <DatePicker
-                    selected={startDate}
-                    onChange={handleDateChange}
-                    className="date-picker"
-                    inline
-                  />
+                  <>
+                    <DatePicker
+                      selected={startDate}
+                      onChange={handleDateChange}
+                      className="date-picker"
+                      inline
+                    />
+                    <div className="calendar-buttons-today-clear">
+                      <button onClick={handleAddTodayButtonClick}>Today</button>
+                      <button onClick={handleClearTodayButtonClick}>
+                        Clear
+                      </button>
+                    </div>
+                  </>
                 )}
                 <div className="save-cancel-buttons">
                   <button

@@ -21,7 +21,7 @@ export default function Backlog() {
       </div>
       {tasks &&
         tasks?.backlog.map((task, index) => (
-          <TodoCard key={index} globalToggle={globalToggle} task={task} />
+          <TodoCard key={index} globalToggle={globalToggle} task={task}  setGlobalToggle={setGlobalToggle}/>
         ))}
     </>
   );

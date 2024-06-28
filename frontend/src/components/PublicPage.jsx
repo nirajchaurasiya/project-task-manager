@@ -135,11 +135,12 @@ export default function PublicPage() {
                 {task?.checklist?.map((e) => (
                   <div key={e} className="checklist-task">
                     <input
-                      checked={false}
+                      checked={e?.isChecked}
                       onClick={handleInputCheck}
                       type="checkbox"
                       readOnly
                       className="checkbox"
+
                     />
                     <p className="task">{e?.title}</p>
                   </div>

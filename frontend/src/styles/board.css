@@ -272,3 +272,68 @@
 .menu-container p:hover {
   background-color: rgb(225, 225, 225);
 }
+
+/*  */
+
+.tooltip-title {
+  position: relative;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 1.8rem;
+  width: 60%;
+}
+
+.tooltip-title::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 5px;
+  white-space: nowrap;
+  font-size: 70%;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.tooltip-title::before {
+  content: "";
+  position: absolute;
+  bottom: 75%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.tooltip-title:hover::after,
+.tooltip-title:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/*  */
+
+.assigned-to-people {
+  margin-left: 5px;
+  background-color: rgb(255, 205, 213);
+  padding: 3px 5px;
+  font-size: 11px;
+  border-radius: 100%;
+  font-weight: 500;
+}
+
+.assigned-to-people.tooltip-title::after{
+  font-size: 100%;
+  text-transform: lowercase;
+}
