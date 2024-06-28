@@ -8,6 +8,7 @@ import { ToastContext } from "../context/ToastContext";
 import { toast } from "react-toastify";
 import { deleteAllCookies } from "../utils/cookieActions";
 import { clearLoggedInUser } from "../features/auth/authSlice";
+import { Link } from "react-router-dom";
 export default function Sidebar() {
   const [toggleLogout, setTogglelogout] = useState(false);
   const setToastText = useContext(ToastContext);
@@ -27,7 +28,11 @@ export default function Sidebar() {
   return (
     <div className="sidebar-container">
       <div className="">
-        <div className="sidebar-heading">
+        <Link
+          to="/home"
+          className="sidebar-heading"
+          style={{ color: "black", textDecoration: "none" }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -74,7 +79,7 @@ export default function Sidebar() {
             />
           </svg>
           <p>Pro Manage</p>
-        </div>
+        </Link>
 
         <div className="side-nav-links">
           <NavLink to="/home" className="sidebar-link">
