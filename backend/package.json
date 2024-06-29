@@ -1,18 +1,17 @@
 {
-  "name": "chai-backend",
+  "name": "backend",
   "version": "1.0.0",
-  "description": "a backend at chai aur code channel - youtube",
+  "description": "project task manager backend",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
   "keywords": [
-    "javascript",
     "backend",
-    "chai"
+    "project-manager"
   ],
-  "author": "Hitesh Choudhary",
+  "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",
