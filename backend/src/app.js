@@ -8,7 +8,6 @@ const allowedOrigins = [
    process.env.DEVELOPMENT_CORS_ORIGIN,
    process.env.PRODUCTION_CORS_ORIGIN,
 ];
-console.log(allowedOrigins);
 app.use(
    cors({
       origin: function (origin, callback) {
