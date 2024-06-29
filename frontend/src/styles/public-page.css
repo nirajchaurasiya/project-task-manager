@@ -50,7 +50,7 @@
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: wrap;
-  /* overflow: hidden; */
+  overflow: visible;
   /* text-overflow: ellipsis; */
   margin: 0.8rem 0px 2rem;
   width: 100%;

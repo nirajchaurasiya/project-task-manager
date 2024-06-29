@@ -118,7 +118,7 @@ export default function PublicPage() {
                   <p>{task?.priority} PRIORITY</p>
                 </div>
               </div>
-              <p className="title">{task?.title}</p>
+              <p className="title"> {task?.title} </p>
               <div className="check-list-container">
                 <div className="todo-list-checklist-count">
                   <p>
@@ -140,7 +140,6 @@ export default function PublicPage() {
                       type="checkbox"
                       readOnly
                       className="checkbox"
-
                     />
                     <p className="task">{e?.title}</p>
                   </div>
