@@ -426,24 +426,25 @@ const getTasksCreatedToday = async (req, res, next) => {
    }
 };
 
-const getFormattedTasksThisWeek = async (req, res) => {
+const getFormattedTasksThisWeek = async (req, res, next) => {
    try {
       const userId = req?.user?._id;
       if (!userId) {
-         throw new ApiError(401, "Unatuhorized access");
+         throw new ApiError(401, "Unauthorized access");
       }
       const user = await User.findById(userId);
-
       if (!user) {
          throw new ApiError(401, "Unauthorized access");
       }
-      const startOfWeek = new Date();
-      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-      const endOfWeek = new Date();
-      endOfWeek.setHours(23, 59, 59, 999);
-      endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
 
+      const endOfPeriod = new Date();
+      endOfPeriod.setHours(23, 59, 59, 999);
+
+      const startOfPeriod = new Date();
+      startOfPeriod.setDate(startOfPeriod.getDate() - 7);
+      startOfPeriod.setHours(0, 0, 0, 0);
+
+      console.log(startOfPeriod, endOfPeriod);
       const tasks = await Task.aggregate([
          {
             $match: {
@@ -453,8 +454,8 @@ const getFormattedTasksThisWeek = async (req, res) => {
          {
             $match: {
                updatedAt: {
-                  $gte: startOfWeek,
-                  $lte: endOfWeek,
+                  $gte: startOfPeriod,
+                  $lte: endOfPeriod,
                },
             },
          },
@@ -480,9 +481,7 @@ const getFormattedTasksThisWeek = async (req, res) => {
             },
          },
          {
-            $sort: {
-               updatedAt: 1, // Sort by createdAt ascending
-            },
+            $sort: { updatedAt: 1 },
          },
          {
             $group: {
@@ -564,22 +563,21 @@ const getTasksCreatedThisMonth = async (req, res, next) => {
       if (!user) {
          throw new ApiError(401, "Unauthorized access");
       }
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
 
-      const endOfMonth = new Date(startOfMonth);
-      endOfMonth.setMonth(startOfMonth.getMonth() + 1);
-      endOfMonth.setDate(0);
-      endOfMonth.setHours(23, 59, 59, 999);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // End of today
+
+      const startOfPeriod = new Date();
+      startOfPeriod.setDate(today.getDate() - 30);
+      startOfPeriod.setHours(0, 0, 0, 0); // Start of 30 days ago
 
       const tasks = await Task.aggregate([
          {
             $match: {
                $or: [{ owner: userId }, { assignedTo: user.email }],
                createdAt: {
-                  $gte: startOfMonth,
-                  $lte: endOfMonth,
+                  $gte: startOfPeriod,
+                  $lte: today,
                },
             },
          },
@@ -606,7 +604,7 @@ const getTasksCreatedThisMonth = async (req, res, next) => {
          },
          {
             $sort: {
-               updatedAt: 1, // Sort by createdAt ascending
+               updatedAt: 1,
             },
          },
          {
@@ -666,7 +664,7 @@ const getTasksCreatedThisMonth = async (req, res, next) => {
             new ApiResponse(
                200,
                { formattedTasks },
-               "Formatted tasks created this month retrieved"
+               "Formatted tasks created in the last 30 days retrieved"
             )
          );
    } catch (error) {
